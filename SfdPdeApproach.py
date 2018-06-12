@@ -13,5 +13,8 @@ p[0]=p0
 
 D0 = 2.7E5
 
-lululul
+tmax = 32
+telapsed
+dt =  1E-5
 
+while telapsed<tmax:
