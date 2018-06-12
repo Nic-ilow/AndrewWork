@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-
+import time as t
 
 width = 256
 p = np.zeros(width)
