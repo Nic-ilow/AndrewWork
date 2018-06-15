@@ -4,7 +4,6 @@ import argparse
 import time as t
 import argparse
 import random as rand
-
 parser = argparse.ArgumentParser(description='Command line inputs:')
 parser.add_argument('-D0','--D0',default=.27,help='diffusion as measured')
 parser.add_argument('-dx','--dx',default=7.0,help='particle diam')
@@ -46,7 +45,7 @@ D = D0/(dx**2)
 acetylMultiplicity = 5
 
 #def secondOrder(p):
-print 'dt:',dt, ' dx (in nm):',dx, ' width:',width, ' D0:',D0, ' D:',D
+print ('dt:',dt, ' dx (in nm):',dx, ' width:',width, ' D0:',D0, ' D:',D)
 
 def progress(p):
     newP1 = p[1] + D * ( p[0] - 2*p[1] + p[2] )
@@ -78,9 +77,8 @@ while telapsed<tmax:
     p = p_1
 
     acetylDensity[:] += asite[:]*dt
-    if telapsed != tmax:
-        p[0] = p0
-        p[width-1] = 0 
+    p[0] = p0
+    p[width-1] = 0 
     occupationDensity[:] += p[:]*dt
 occupationDensity /= tmax
 acetylDensity /= tmax
