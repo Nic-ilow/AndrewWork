@@ -6,7 +6,7 @@ import argparse
 import random as rand
 
 parser = argparse.ArgumentParser(description='Command line inputs:')
-parser.add_argument('-D0','--D0',default=2.7E5,help='diffusion as measured')
+parser.add_argument('-D0','--D0',default=.27,help='diffusion as measured')
 parser.add_argument('-dx','--dx',default=7.0,help='particle diam')
 parser.add_argument('-tsteps','--tsteps',default=1000,help='maximum time in seconds')
 parser.add_argument('-width','--width',default=16,help='width system in units of dx')
@@ -40,11 +40,9 @@ p[0]=p0
 #dp/dt = -grad(J) = (D*p')'
 
 telapsed = 0
-F = 0.2
-a = D0
-dt = F*dx**2/a
+dt = 1E-3
 tmax = tsteps*dt
-D = D0*dt/(dx**2)
+D = D0/(dx**2)
 acetylMultiplicity = 5
 
 #def secondOrder(p):
@@ -70,7 +68,7 @@ while telapsed<tmax:
             if i==width-1:
                     pPass = np.array([p[width-2] , p[width-1] , 0])
             elif i==0:
-                    pPass = np.array([0 , p[0] , p[1]])
+                    pPass = np.array([p[0] , p[0] , p[1]])
             else:
                     pPass = np.array([p[i-1],p[i],p[i+1]])
             
