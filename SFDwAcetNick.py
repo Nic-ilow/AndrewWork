@@ -29,7 +29,7 @@ parser.add_argument('-nrun','--nrun',default=0,help='number of this run')
 parser.add_argument('-name','--name',default='MT',help='datafile name base in single quotes')
 parser.add_argument('-seed','--seed',default=0,help='seed for random number')
 parser.add_argument('-width','--width',default=16,help='width system in units of dx')
-parser.add_argument('-arate','--arate',default=.0001,help='probability of particle acetylating site')
+parser.add_argument('-arate','--arate',default=100,help='probability of particle acetylating site')
 args=parser.parse_args()
 
 R=float(args.R)
@@ -105,7 +105,7 @@ def acetylate(this):
 	global Nacetyl
 	pos = free[this]
 
-	if ran.random()<arate and asite[pos]==0:
+	if ran.random()<arate*dt and asite[pos]==0:
 		asite[pos]=1
 		Nacetyl +=1
 
