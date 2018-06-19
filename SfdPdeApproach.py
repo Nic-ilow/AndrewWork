@@ -1,4 +1,4 @@
-import os
+#import os
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +7,7 @@ import time as t
 import argparse
 import random as rand
 parser = argparse.ArgumentParser(description='Command line inputs:')
-parser.add_argument('-D0','--D0',default=.27,help='diffusion as measured')
+parser.add_argument('-D0','--D0',default=.135,help='diffusion as measured')
 parser.add_argument('-dx','--dx',default=7.0,help='particle diam')
 parser.add_argument('-tsteps','--tsteps',default=1000,help='maximum time in seconds')
 parser.add_argument('-width','--width',default=16,help='width system in units of dx')
@@ -92,7 +92,7 @@ def binder(bound): #1 means Bound, 0 means unbound
         global unbindcount
         global bindcount
         for j in range(width):
-                if ( bound[j]==0 and (rand.random() <= kon*dt) ): #If unbound, and being bound
+                if ( bound[j]==0 and (rand.random() <= kon*dt*p[j]) ): #If unbound, and being bound
                         bound[j]=1
                         bindcount +=1
                 
@@ -138,7 +138,7 @@ normalizedAcetylDensity = acetylDensity / acetylMultiplicity
 normalizedOccupationDensity = occupationDensity / p0
 #plt.figure()
 #plt.plot(p)
-os.system('say "yo shit done"')
+#os.system('say "yo shit done"')
 plt.figure()
 plt.plot(normalizedAcetylDensity,color='r',label='Acetylation Density')
 plt.plot(normalizedOccupationDensity,color='b',label='Occupation Density')
