@@ -80,7 +80,7 @@ while telapsed<=tmax:
         acetyl[0:width] = acetyl[0:width] + ( acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
         telapsed += dt
         
-        '''
+        
         if abs(telapsed-t0)<epsilon:
                 #plt.figure()
                 plt.plot(x2,occupationDensity/telapsed,label=('t= t0')) 
@@ -106,7 +106,7 @@ while telapsed<=tmax:
                 plt.plot(x2,occupationDensity/telapsed,label=('t= t4'))
             #    plt.legend()
                 print(telapsed)
-        '''
+        
 
         p,p_1 = p_1,p # Updating concentration array
         p[0] = p0 # resetting the boundary condition
@@ -120,13 +120,21 @@ occupationDensity /= tmax*p0
 acetylDensity /= tmax
 #np.save('acetyl'+pscaleS,acetylDensity)
 #np.save('occupation'+pscaleS,occupationDensity)
-
-plt.figure()
-plt.scatter(x2,occupationDensity-test,label='residual')
-plt.figure()
+z = x/np.sqrt(4*D0*tmax)
+acetylationfit = 1 - np.exp( -test2*arate*tmax* ( (1+2*z**2)*scis.erfc(z) - 2*z*np.exp(-z**2)/np.sqrt(np.pi) ) )
 plt.plot(x2,occupationDensity,label='t= tmax')
 plt.plot(x2,test,label='tmax erfc fit')
 plt.plot(x2,acetylDensity,label='acetyl occupancy')
 plt.legend()
+
+plt.figure()
+plt.scatter(x2,occupationDensity-test,label='residual')
+plt.legend()
+
+plt.figure()
+plt.plot(x2,acetylDensity,label='acetyl occupancy')
+plt.plot(x2,acetylationfit,label='acetyl fit')
+plt.legend()
 plt.show()
+
 
