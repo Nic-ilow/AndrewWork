@@ -23,13 +23,14 @@ dt = float(args.dt)
 D = D0*dt/(dx**2)
 ### Plotting Cutoffs
 epsilon = dt/1000
-t0 = 1E-1
-t1 = 2E-1
-t2 = 4E-1
-t3 = 8E-1
-t4 = 16E-1
+t0 = 1
+t1 = 2
+t2 = 4
+t3 = 8
+t4 = 16
 ### Concentration Variables
 p = np.random.rand(width)
+ptest = p
 p_1 = np.zeros_like(p)
 x=np.arange(width)
 ### Density Tracking
@@ -63,29 +64,29 @@ while telapsed<tmax:
 
         telapsed += dt
         if abs(telapsed-t0)<epsilon:
-                plt.figure()
-                plt.scatter(x,occupationDensity/telapsed,marker='o',label=('t= t0')) 
-                plt.plot(x,scis.erfc(x/np.sqrt(4*D0*telapsed)))
+                #plt.figure()
+                plt.plot(x,occupationDensity/telapsed,label=('t= t0')) 
+        #        plt.legend()
                 print(telapsed)
         if abs(telapsed-t1)<epsilon:
-                plt.figure()
-                plt.scatter(x,occupationDensity/telapsed,marker='o',label=('t= t1'))
-                plt.plot(x,scis.erfc(x/np.sqrt(4*D0*telapsed))) 
+                #plt.figure()
+                plt.plot(x,occupationDensity/telapsed,label=('t= t1'))
+         #       plt.legend()
                 print(telapsed)
         if abs(telapsed-t2)<epsilon:
-                plt.figure()
-                plt.scatter(x,occupationDensity/telapsed,marker='o',label=('t= t2'))
-                plt.plot(x,scis.erfc(x/np.sqrt(4*D0*telapsed)))
+                #plt.figure()
+                plt.plot(x,occupationDensity/telapsed,label=('t= t2'))
+          #      plt.legend()
                 print(telapsed)
         if abs(telapsed-t3)<epsilon:
-                plt.figure()
-                plt.scatter(x,occupationDensity/telapsed,marker='o',label=('t= t3'))
-                plt.plot(x,scis.erfc(x/np.sqrt(4*D0*telapsed)))
+                #plt.figure()
+                plt.plot(x,occupationDensity/telapsed,label=('t= t3'))
+           #     plt.legend()
                 print(telapsed)
         if abs(telapsed-t4)<epsilon:
-                plt.figure()
-                plt.scatter(x,occupationDensity/telapsed,marker='o',label=('t= t4'))
-                plt.plot(x,scis.erfc(x/np.sqrt(4*D0*telapsed)))
+                #plt.figure()
+                plt.plot(x,occupationDensity/telapsed,label=('t= t4'))
+            #    plt.legend()
                 print(telapsed)
         p,p_1 = p_1,p # Updating concentration array
         p[0] = p0 # resetting the boundary condition
@@ -93,9 +94,8 @@ while telapsed<tmax:
         occupationDensity += p*dt
 
 occupationDensity /= tmax
-plt.figure()
-plt.scatter(x,occupationDensity,marker='o',label='t= tmax')
-plt.plot(x,scis.erfc(x/np.sqrt(4*D0*tmax)))
+#plt.figure()
+plt.plot(x,occupationDensity,label='t= tmax')
 plt.legend()
 plt.show()
 
