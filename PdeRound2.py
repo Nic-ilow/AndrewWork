@@ -54,7 +54,7 @@ p[width-1] = 0
 
 telapsed = 0
 
-tstep = tmax/1000
+tstep = tmax/10000
 tArray = np.arange(0,tmax+tstep,tstep)
 xscaled = x/width/dx
 pTot = np.empty(int(tmax/tstep)+1)
