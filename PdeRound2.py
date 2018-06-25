@@ -59,34 +59,61 @@ tArray = np.arange(0,tmax+tstep,tstep)
 xscaled = x/width/dx
 pTot = np.empty(int(tmax/tstep)+1)
 aTot = np.empty(int(tmax/tstep)+1)
+
 counter = 0
 tstart = time.time()
 tplot=1
 steadyStateP = np.linspace(p0,0,width)
+
+t2 = 0
+t2Array = np.array( [1, 2, 4, 8, 16, 32] )
+
+pArray = np.empty_like(t2Array)
+pAnalyticArray = np.empty_like(t2Array)
+
+
+
+Dsfd = (D/(1+(p0/pscale)+((p0/pscale)**2))) 
 while telapsed<=tmax:
 
-        p_1[1:width-1] = p[1:width-1] + (D/(1+(p0/pscale)+((p0/pscale)**2))) * ( p[0:width-2] + p[2:width] - 2*p[1:width-1] ) 
+        p_1[1:width-1] = p[1:width-1] + D * ( p[0:width-2] + p[2:width] - 2*p[1:width-1] ) 
         acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
 
         
         if abs(telapsed-t1)<epsilon:
                 if abs(telapsed-tplot)<=epsilon:
-                        plt.figure(1)
-                        a = 't= '+str(tplot)+'s fit'
+                        z = x/np.sqrt(4*D0*telapsed)
+                        if abs(telapsed-(t2Array[t2]))<=epsilon:
+                                pArray[t2] = p
+                                pAnalyticArray[t2] = scis.erfc(z) 
+                                t2 +=1
+                                print(telapsed)
+                        
+                        a = 't= '+str(tplot)+'s analytical'
                         b = 't= '+str(tplot)+'s simulated'
                         c = 'Occupation t= '+str(tplot)+'s residual'
                         d = 'Acetylation t= '+str(tplot)+'s residual'
-                        z = x/np.sqrt(4*D0*telapsed)
+                        
+                        
+                        plt.figure(1)
                         plt.scatter(xscaled,p,label=b,marker=',',s=2)
-                        plt.plot(xscaled,scis.erfc(z),label=a)                        
+                        plt.plot(xscaled,scis.erfc(z),label=a)
+
+
                         plt.figure(2) 
                         acetylationfit = acetylmultiplicity * (1 - np.exp( -steadyStateP*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
                         plt.scatter(xscaled,acetyl,label=b,marker=',',s=2)
                         plt.plot(xscaled,acetylationfit,label=a)
+                        
+                        
                         plt.figure(3)
                         plt.scatter(xscaled,p-(scis.erfc(z)*steadyStateP),label=c,marker=',',s=2)
+                        
+                        
                         plt.figure(4)
                         plt.scatter(xscaled,acetyl-acetylationfit,label=d,marker=',',s=2)
+                        
+                        
                         tplot += 1
                 pTot[int(counter/tstep)] = sum(p)
                 aTot[int(counter/tstep)] = sum(acetyl)
