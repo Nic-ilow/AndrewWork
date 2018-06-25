@@ -33,7 +33,7 @@ D = D0*dt/(dx**2)
 pscaleS = str(pscale)
 
 ### Plotting Cutoffs
-epsilon = dt/10
+epsilon = dt/2
 t1 = 0
 
 ### Concentration Variables
@@ -61,6 +61,8 @@ pTot = np.empty(int(tmax/tstep)+1)
 aTot = np.empty(int(tmax/tstep)+1)
 counter = 0
 tstart = time.time()
+tplot=1
+steadyStateP = np.linspace(p0,0,width)
 while telapsed<=tmax:
 
         p_1[1:width-1] = p[1:width-1] + (D/(1+(p0/pscale)+((p0/pscale)**2))) * ( p[0:width-2] + p[2:width] - 2*p[1:width-1] ) 
@@ -68,8 +70,24 @@ while telapsed<=tmax:
 
         
         if abs(telapsed-t1)<epsilon:
-                #if t1!=-0:
-                        #plt.plot(xscaled,occupationDensity/telapsed,label=('t= t1'))
+                if abs(telapsed-tplot)<=epsilon:
+                        plt.figure(1)
+                        a = 't= '+str(tplot)+'s fit'
+                        b = 't= '+str(tplot)+'s simulated'
+                        c = 'Occupation t= '+str(tplot)+'s residual'
+                        d = 'Acetylation t= '+str(tplot)+'s residual'
+                        z = x/np.sqrt(4*D0*telapsed)
+                        plt.scatter(xscaled,p,label=b,marker=',',s=2)
+                        plt.plot(xscaled,scis.erfc(z),label=a)                        
+                        plt.figure(2) 
+                        acetylationfit = acetylmultiplicity * (1 - np.exp( -steadyStateP*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
+                        plt.scatter(xscaled,acetyl,label=b,marker=',',s=2)
+                        plt.plot(xscaled,acetylationfit,label=a)
+                        plt.figure(3)
+                        plt.scatter(xscaled,p-(scis.erfc(z)*steadyStateP),label=c,marker=',',s=2)
+                        plt.figure(4)
+                        plt.scatter(xscaled,acetyl-acetylationfit,label=d,marker=',',s=2)
+                        tplot += 1
                 pTot[int(counter/tstep)] = sum(p)
                 aTot[int(counter/tstep)] = sum(acetyl)
                 t1 += tstep
@@ -86,7 +104,22 @@ tend=time.time()
 trun = (tend-tstart)/60 #In minutes
 print(trun)
 
-steadyStateP = np.linspace(p0,0,width)
+plt.figure(1)
+plt.xlabel('Normalized Length of Microtubule')
+plt.ylabel('Concentration')
+plt.legend()
+plt.figure(2)
+plt.xlabel('Normalized Length of Microtubule')
+plt.ylabel('Acetylation')
+plt.legend()
+plt.figure(3)
+plt.xlabel('Normalized Length of Microtubule')
+plt.ylabel('Concentration')
+plt.legend()
+plt.figure(4)
+plt.xlabel('Normalized Length of Microtubule')
+plt.ylabel('Acetylation')
+plt.legend()
 occupationDensity /= tmax*p0
 acetylDensity /= tmax*acetylmultiplicity
 
@@ -94,9 +127,11 @@ acetylDensity /= tmax*acetylmultiplicity
 #np.save('occupation'+pscaleS,occupationDensity)
 z = x/np.sqrt(4*D0*tmax)
 
-occupationFit = scis.erfc(z) * steadyStateP
-acetylationfit = acetylmultiplicity * (1 - np.exp( -steadyStateP*arate*tmax* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
+occupationFit = scis.erfc(z) #* steadyStateP
+acetylationfit = acetylmultiplicity * (1 - np.exp( -arate*tmax* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
+plt.legend()
 
+plt.figure()
 plt.plot(xscaled,occupationDensity,label='occupation average density')
 plt.plot(xscaled,acetylDensity,label='acetylation average density')
 plt.legend()
@@ -117,8 +152,10 @@ plt.plot(xscaled,acetylationfit,label='acetyl fit at tmax')
 plt.legend()
 
 plt.figure()
-plt.plot(tArray,pTot,label='Total rho')
-plt.plot(tArray,aTot,label='Total acetylated')
+plt.scatter(tArray,pTot,label='Total concentration',marker=',',s=2)
+plt.scatter(tArray,aTot,label='Total acetylation',marker=',',s=2)
+plt.xlabel('time (s)')
+plt.ylabel('Total Concentration/Acetlyation throughout tubule')
 plt.legend()
 plt.show()
 
