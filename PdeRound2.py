@@ -54,7 +54,7 @@ p[width-1] = 0
 
 telapsed = 0
 
-tstep = tmax/10000
+tstep = tmax/100
 tArray = np.arange(0,tmax+tstep,tstep)
 xscaled = x/width/dx
 pTot = np.empty(int(tmax/tstep)+1)
@@ -68,8 +68,8 @@ steadyStateP = np.linspace(p0,0,width)
 t2 = 0
 t2Array = np.array( [1, 2, 4, 8, 16, 32] )
 
-pArray = np.empty_like(t2Array)
-pAnalyticArray = np.empty_like(t2Array)
+pArray = np.empty((6,width))
+pAnalyticArray = np.zeros_like(pArray)
 
 
 
@@ -80,41 +80,45 @@ while telapsed<=tmax:
         acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
 
         
+        if abs(telapsed-(t2Array[t2]))<=epsilon:
+                z = x/np.sqrt(4*D0*telapsed)
+                a = 't= '+str(t2)+'s analytical'
+                b = 't= '+str(t2)+'s simulated'
+                pArray[t2,:] = p[:]
+                pAnalyticArray[t2,:] = scis.erfc(z)*steadyStateP
+                plt.plot(xscaled,pAnalyticArray[t2,:] , label=a)
+                t2 +=1
+                print(telapsed)
+                plt.scatter(xscaled,p,marker=',',s=2,label=b)
+                        
         if abs(telapsed-t1)<epsilon:
-                if abs(telapsed-tplot)<=epsilon:
-                        z = x/np.sqrt(4*D0*telapsed)
-                        if abs(telapsed-(t2Array[t2]))<=epsilon:
-                                pArray[t2] = p
-                                pAnalyticArray[t2] = scis.erfc(z) 
-                                t2 +=1
-                                print(telapsed)
+                z = x/np.sqrt(4*D0*telapsed)
+                a = 't= '+str(tplot)+'s analytical'
+                b = 't= '+str(tplot)+'s simulated'
+                c = 'Occupation t= '+str(tplot)+'s residual'
+                d = 'Acetylation t= '+str(tplot)+'s residual'
                         
-                        a = 't= '+str(tplot)+'s analytical'
-                        b = 't= '+str(tplot)+'s simulated'
-                        c = 'Occupation t= '+str(tplot)+'s residual'
-                        d = 'Acetylation t= '+str(tplot)+'s residual'
-                        
-                        
-                        plt.figure(1)
-                        plt.scatter(xscaled,p,label=b,marker=',',s=2)
-                        plt.plot(xscaled,scis.erfc(z),label=a)
+                '''   
+                plt.figure(1)
+                plt.scatter(xscaled,p,label=b,marker=',',s=2)
+                plt.plot(xscaled,scis.erfc(z),label=a)
 
 
-                        plt.figure(2) 
-                        acetylationfit = acetylmultiplicity * (1 - np.exp( -steadyStateP*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
-                        plt.scatter(xscaled,acetyl,label=b,marker=',',s=2)
-                        plt.plot(xscaled,acetylationfit,label=a)
+                plt.figure(2) 
+                acetylationfit = acetylmultiplicity * (1 - np.exp( -steadyStateP*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
+                plt.scatter(xscaled,acetyl,label=b,marker=',',s=2)
+                plt.plot(xscaled,acetylationfit,label=a)
                         
                         
-                        plt.figure(3)
-                        plt.scatter(xscaled,p-(scis.erfc(z)*steadyStateP),label=c,marker=',',s=2)
+                plt.figure(3)
+                plt.scatter(xscaled,p-(scis.erfc(z)*steadyStateP),label=c,marker=',',s=2)
                         
                         
-                        plt.figure(4)
-                        plt.scatter(xscaled,acetyl-acetylationfit,label=d,marker=',',s=2)
+                plt.figure(4)
+                plt.scatter(xscaled,acetyl-acetylationfit,label=d,marker=',',s=2)
+                '''            
                         
-                        
-                        tplot += 1
+                tplot += 1
                 pTot[int(counter/tstep)] = sum(p)
                 aTot[int(counter/tstep)] = sum(acetyl)
                 t1 += tstep
@@ -130,7 +134,7 @@ while telapsed<=tmax:
 tend=time.time()
 trun = (tend-tstart)/60 #In minutes
 print(trun)
-
+'''
 plt.figure(1)
 plt.xlabel('Normalized Length of Microtubule')
 plt.ylabel('Concentration')
@@ -147,6 +151,7 @@ plt.figure(4)
 plt.xlabel('Normalized Length of Microtubule')
 plt.ylabel('Acetylation')
 plt.legend()
+'''
 occupationDensity /= tmax*p0
 acetylDensity /= tmax*acetylmultiplicity
 
@@ -156,6 +161,7 @@ z = x/np.sqrt(4*D0*tmax)
 
 occupationFit = scis.erfc(z) #* steadyStateP
 acetylationfit = acetylmultiplicity * (1 - np.exp( -arate*tmax* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
+'''
 plt.legend()
 
 plt.figure()
@@ -185,4 +191,4 @@ plt.xlabel('time (s)')
 plt.ylabel('Total Concentration/Acetlyation throughout tubule')
 plt.legend()
 plt.show()
-
+'''
