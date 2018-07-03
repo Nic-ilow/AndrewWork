@@ -1,4 +1,3 @@
-import math as m
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
@@ -30,9 +29,10 @@ acetylmultiplicity = int(args.am)
 pscale = float(args.pscale)
 
 ### Length and Steps
-#L = 14336.0 #3 microns eg 3000 nanometers since we're in units of nm
-L = 300
+L = 14336.0 #3 microns eg 3000 nanometers since we're in units of nm
 #L = width*dx
+x = np.arange(0,L,dx)
+width = np.size(x)
 
 ### Our effective Diffusion Constant for taking derivative
 D = D0/(dx**2)
@@ -43,29 +43,22 @@ tstart = time.time()
 
 pArray = np.empty((7,width))
 pAnalyticArray = np.zeros_like(pArray)
-dxArray = np.arange(.1,10,.1)
-#MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
-MaxDensityResidual = np.zeros( np.size(dxArray) )
+
+dtArray = np.arange(1e-6,2e-5+1e-7,1e-6)
+MaxDensityResidual = np.zeros( (np.size(dtArray),4) )
 MaxAcetylResidual = np.zeros_like(MaxDensityResidual)
 Dsfd = (D/(1+(p0/pscale)+((p0/pscale)**2))) 
 step=0
-for dx in dxArray:
-        D = D0/(dx**2)
-        dt = (dx**2) / D0 * .5
-        print('dx=%.2f'%dx) 
-        print('D=%.3e'%D)
-        print('dt = %.3e'%dt)
-        x = np.arange(0,L,dx)
-        width = np.size(x)
+for dt in dtArray:
+        print(dt) 
         t2 = 0
-                
         ### Concentration Variables
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
 
 
         acetyl = np.zeros(width)
-       
+        x=np.arange(width)*dx
         ### Boundary Condition
         p[0] = p0
         p[width-1] = 0
@@ -74,57 +67,55 @@ for dx in dxArray:
         print(telapsed)
         epsilon = dt/2
 
-        tstart=time.time()
+        
         while telapsed<=tmax:
 
                 p_1[1:width] = p[1:width] + D * dt * ( p[0:width-1] + p[2:width+1] - 2*p[1:width] ) 
                 acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
-
-  
-                telapsed += dt                     
-                z = x/np.sqrt(4*D0*telapsed)
-                        
-                acetylationfit = acetylmultiplicity * (1 - np.exp( -p0*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
- 
+                
+                
+                telapsed += dt
+                if abs(telapsed-(2**(t2-1)))<=epsilon:                       
+                        z = x/np.sqrt(4*D0*telapsed)
+                        acetylationfit = acetylmultiplicity * (1 - np.exp( -p0*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
+                
+                        acetylResidual = acetyl-acetylationfit 
+                        residual = scis.erfc(z)*p0 - p_1[0:width]
+                        MaxDensityResidual[step,t2] = max(abs(residual))
+                        MaxAcetylResidual[step,t2] = max(abs(acetylResidual))
+                        t2 +=1
+                        print(telapsed)    
+                                 
                 p,p_1 = p_1,p # Updating concentration array
                 p[0] = p0 # resetting the boundary condition
-                p[width]=p[width-1] # Closed Tube Boundary
-        acetylResidual = acetylationfit - acetyl
-        residual = scis.erfc(z)*p0-p_1[0:width]
-        MaxDensityResidual[step] = max(abs(residual))
-        MaxAcetylResidual[step] = max(abs(acetylResidual))
-
-               
+                p[width] = p[width-1]
         step += 1          
-        tend=time.time()
-        trun = (tend-tstart)/60 #In minutes
-        print(trun)
-parameterString = ' dt (s)=%.2e \n \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
-
+tend=time.time()
+trun = (tend-tstart)/60 #In minutes
+print(trun)
+parameterString = 'dx (nm)=%.2f \ndt (s)=%.2e \nwidth (# of sites)=%.2f \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dx,dt,width,p0,L)
 plt.figure()
-plt.loglog(dxArray,MaxDensityResidual,label='Residual at t=0.5s')
-plt.xlabel('dx (nm)')
-plt.ylabel('Max Residual of Density')
-plt.legend()
-plt.show()
-'''
-plt.figure()
-plt.loglog(dxArray,MaxDensityResidual[:,1],label='Residual at t=1.0s')
-plt.xlabel('dx (nm)')
+plt.loglog(dtArray,MaxDensityResidual[:,0],label='Residual at t=0.5s')
+plt.xlabel('dt (s)')
 plt.ylabel('Max Residual of Density')
 plt.legend()
 
 plt.figure()
-plt.loglog(dxArray,MaxDensityResidual[:,2],label='Residual at t=2.0s')
-plt.xlabel('dx (nm)')
+plt.loglog(dtArray,MaxDensityResidual[:,1],label='Residual at t=1.0s')
+plt.xlabel('dt (s)')
+plt.ylabel('Max Residual of Density')
+plt.legend()
+
+plt.figure()
+plt.loglog(dtArray,MaxDensityResidual[:,2],label='Residual at t=2.0s')
+plt.xlabel('dt (s)')
 plt.ylabel('Max Residual of Density')
 plt.legend()
 
 plt.figure()
 plt.title(parameterString)
-plt.loglog(dxArray,MaxDensityResidual[:,3],label='Residual at t=4.0s')
-plt.xlabel('dx (nm)')
+plt.loglog(dtArray,MaxDensityResidual[:,3],label='Residual at t=4.0s')
+plt.xlabel('dt (s)')
 plt.ylabel('Max Residual of Density')
 plt.legend()
 plt.show()
-'''
