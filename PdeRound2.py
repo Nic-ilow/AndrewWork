@@ -136,8 +136,6 @@ while telapsed<=tmax:
         occupationDensity += p[0:width]*dt
         acetylDensity += acetyl*dt
         counter+=1
-        if counter%10==0:
-                print(counter)
 tend=time.time()
 trun = (tend-tstart)/60 #In minutes
 print(trun)

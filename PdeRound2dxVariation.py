@@ -31,7 +31,7 @@ pscale = float(args.pscale)
 
 ### Length and Steps
 #L = 14336.0 #3 microns eg 3000 nanometers since we're in units of nm
-L = 300
+L = 3000
 #L = width*dx
 
 ### Our effective Diffusion Constant for taking derivative
@@ -43,7 +43,7 @@ tstart = time.time()
 
 pArray = np.empty((7,width))
 pAnalyticArray = np.zeros_like(pArray)
-dxArray = np.arange(.1,10,.1)
+dxArray = np.arange(.01,10,.1)
 #MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
 MaxDensityResidual = np.zeros( np.size(dxArray) )
 MaxAcetylResidual = np.zeros_like(MaxDensityResidual)
@@ -77,13 +77,18 @@ for dx in dxArray:
         tstart=time.time()
         while telapsed<=tmax:
 
+                if abs(telapsed-(tmax/4)) <= epsilon:
+                        print(telapsed)
+                if abs(telapsed-(tmax/2)) <= epsilon:
+                        print(telapsed)
+
                 p_1[1:width] = p[1:width] + D * dt * ( p[0:width-1] + p[2:width+1] - 2*p[1:width] ) 
                 acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
 
-  
+                
                 telapsed += dt                     
                 z = x/np.sqrt(4*D0*telapsed)
-                        
+                                    
                 acetylationfit = acetylmultiplicity * (1 - np.exp( -p0*arate*telapsed* ( (1+ (2 * (z**2) ) ) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ))
  
                 p,p_1 = p_1,p # Updating concentration array
@@ -106,6 +111,14 @@ plt.loglog(dxArray,MaxDensityResidual,label='Residual at t=0.5s')
 plt.xlabel('dx (nm)')
 plt.ylabel('Max Residual of Density')
 plt.legend()
+
+
+plt.figure()
+plt.loglog(dxArray,MaxAcetylResidual,label='Residual at t=0.5s')
+plt.xlabel('dx (nm)')
+plt.ylabel('Max Residual of Acetylation')
+plt.legend()
+
 plt.show()
 '''
 plt.figure()
