@@ -43,12 +43,13 @@ tstart = time.time()
 
 pArray = np.empty((7,width))
 pAnalyticArray = np.zeros_like(pArray)
-dxArray = np.arange(.01,10,.1)
+dxArray = np.arange(.3,10,.1)
 #MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
 MaxDensityResidual = np.zeros( np.size(dxArray) )
 MaxAcetylResidual = np.zeros_like(MaxDensityResidual)
 Dsfd = (D/(1+(p0/pscale)+((p0/pscale)**2))) 
 step=0
+tTotstart = time.time()
 for dx in dxArray:
         D = D0/(dx**2)
         dt = (dx**2) / D0 * .5
@@ -77,9 +78,7 @@ for dx in dxArray:
         tstart=time.time()
         while telapsed<=tmax:
 
-                if abs(telapsed-(tmax/4)) <= epsilon:
-                        print(telapsed)
-                if abs(telapsed-(tmax/2)) <= epsilon:
+                if abs(telapsed-(tmax/4))<=epsilon or abs(telapsed-tmax/2)<=epsilon or abs(telapsed-tmax/10) <= epsilon:
                         print(telapsed)
 
                 p_1[1:width] = p[1:width] + D * dt * ( p[0:width-1] + p[2:width+1] - 2*p[1:width] ) 
@@ -104,17 +103,20 @@ for dx in dxArray:
         tend=time.time()
         trun = (tend-tstart)/60 #In minutes
         print(trun)
-parameterString = ' dt (s)=%.2e \n \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
+tTotend=time.time()
+trun = (tTotend-tTotstart)/60
+print('Total Time Ran: %.2f'%trun)
+parameterString = ' dt (s)=%.2e \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
 
 plt.figure()
-plt.loglog(dxArray,MaxDensityResidual,label='Residual at t=0.5s')
+plt.loglog(dxArray,MaxDensityResidual,label='Residual at t=0.05s')
 plt.xlabel('dx (nm)')
 plt.ylabel('Max Residual of Density')
 plt.legend()
 
 
 plt.figure()
-plt.loglog(dxArray,MaxAcetylResidual,label='Residual at t=0.5s')
+plt.loglog(dxArray,MaxAcetylResidual,label='Residual at t=0.05s')
 plt.xlabel('dx (nm)')
 plt.ylabel('Max Residual of Acetylation')
 plt.legend()
