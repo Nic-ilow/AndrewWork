@@ -35,7 +35,7 @@ pscale = float(args.pscale)
 ### Analytical Acetylation Function
 
 def acetylAnalytical(x,telapsed):
-        z = (x*dx) / np.sqrt(4*D0*telapsed)
+        z = (x*dx) / np.sqrt(4*D0Scaled*telapsed)
         acetyl = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
         return  acetyl
         
@@ -56,19 +56,19 @@ tstart = time.time()
 
 pArray = np.empty((7,width))
 pAnalyticArray = np.zeros_like(pArray)
-dxArray = np.arange(1,10,.1)
+dxArray = np.arange(1,10.1,.1)
 #MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
 
 MaxDensityResidual = np.zeros( np.size(dxArray) )
 MaxAcetylResidual = np.zeros_like(MaxDensityResidual)
 MaxNetDensityResidual = np.zeros_like(MaxDensityResidual)
 MaxNetAcetylResidual = np.zeros_like(MaxDensityResidual)
-
-Dsfd = (D/(1+(p0/pscale)+((p0/pscale)**2))) 
+D0Scaled = (D0/(1+(p0/pscale)+((p0/pscale)**2)))
 step=0
 tTotstart = time.time()
 for dx in dxArray:
         D = D0/(dx**2)
+        D = (D/(1+(p0/pscale)+((p0/pscale)**2))) #Single File Diffusion D
         dt = (dx**2) / D0 * .5
         print('dx=%.2f'%dx) 
         print('D=%.3e'%D)
@@ -107,7 +107,7 @@ for dx in dxArray:
                 
                 telapsed += dt                     
                 
-                z = x/np.sqrt(4*D0*telapsed)
+                z = x/np.sqrt(4*D0Scaled*telapsed)
                                     
                 acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )                
                 
@@ -120,7 +120,7 @@ for dx in dxArray:
                         pTotAnalytical[counter/10] = p0 * np.sqrt(4*D*telapsed/np.pi)
                 
                         aTot[counter/10] = sum(acetyl)
-                        aTotAnalytical[counter/10] = scii.quad(acetylAnalytical,0,L,args=(telapsed))[0] 
+                        aTotAnalytical[counter/10] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
                 counter+=1
         
         acetylResidual = acetylationfit - acetyl
