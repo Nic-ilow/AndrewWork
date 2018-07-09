@@ -56,7 +56,7 @@ tstart = time.time()
 
 pArray = np.empty((7,width))
 pAnalyticArray = np.zeros_like(pArray)
-dxArray = np.arange(1,10,.1)
+dxArray = np.arange(1,1.1,.1)
 #MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
 
 MaxDensityResidual = np.zeros( np.size(dxArray) )
@@ -116,11 +116,11 @@ for dx in dxArray:
                 p[width]=p[width-1] # Closed Tube Boundary
                 
                 if (counter%10)==0:
-                        pTot[counter/10] = sum(p[0:width])
-                        pTotAnalytical[counter/10] = p0 * np.sqrt(4*D*telapsed/np.pi)
+                        pTot[int(counter/10)] = sum(p[0:width])
+                        pTotAnalytical[int(counter/10)] = p0 * np.sqrt(4*D*telapsed/np.pi)
                 
-                        aTot[counter/10] = sum(acetyl)
-                        aTotAnalytical[counter/10] = scii.quad(acetylAnalytical,0,L,args=(telapsed))[0] 
+                        aTot[int(counter/10)] = sum(acetyl)
+                        aTotAnalytical[int(counter/10)] = scii.quad(acetylAnalytical,0,L,args=(telapsed))[0] 
                 counter+=1
         
         acetylResidual = acetylationfit - acetyl

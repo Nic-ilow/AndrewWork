@@ -52,20 +52,26 @@ D = D0/(dx**2)
 
 
 ### Plotting Cutoffs
+base = 1.1
+Samples = 1
 tstart = time.time()
-
-pArray = np.empty((7,width))
-pAnalyticArray = np.zeros_like(pArray)
-dxArray = np.arange(1,10.1,.1)
+dxArray = np.logspace(0,Samples,Samples+1,base=base)
 #MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
+
+pArray = np.empty((np.size(dxArray),width))
+pAnalyticArray = np.zeros_like(pArray)
+pTotArray = np.zeros_like(pArray)
+pTotAnalyticalArray = np.zeros_like(pArray)
 
 MaxDensityResidual = np.zeros( np.size(dxArray) )
 MaxAcetylResidual = np.zeros_like(MaxDensityResidual)
 MaxNetDensityResidual = np.zeros_like(MaxDensityResidual)
 MaxNetAcetylResidual = np.zeros_like(MaxDensityResidual)
+
 D0Scaled = (D0/(1+(p0/pscale)+((p0/pscale)**2)))
 step=0
 tTotstart = time.time()
+
 for dx in dxArray:
         D = D0/(dx**2)
         D = (D/(1+(p0/pscale)+((p0/pscale)**2))) #Single File Diffusion D
@@ -116,11 +122,11 @@ for dx in dxArray:
                 p[width]=p[width-1] # Closed Tube Boundary
                 
                 if (counter%10)==0:
-                        pTot[counter/10] = sum(p[0:width])
-                        pTotAnalytical[counter/10] = p0 * np.sqrt(4*D*telapsed/np.pi)
+                        pTot[int(counter/10)] = sum(p[0:width])
+                        pTotAnalytical[int(counter/10)] = p0 * np.sqrt(4*D*telapsed/np.pi)
                 
-                        aTot[counter/10] = sum(acetyl)
-                        aTotAnalytical[counter/10] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
+                        aTot[int(counter/10)] = sum(acetyl)
+                        aTotAnalytical[int(counter/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
                 counter+=1
         
         acetylResidual = acetylationfit - acetyl
@@ -132,7 +138,32 @@ for dx in dxArray:
         MaxAcetylResidual[step] = max(abs(acetylResidual))
         MaxNetDensityResidual[step] = max(abs(pTotResidual))
         MaxNetAcetylResidual[step] = max(abs(aTotResidual))
-               
+        if step==2 or step==6 or step==10:
+                if step==2:
+                        marker = '.'
+                elif step==6:
+                        marker = '*'
+                else:
+                        marker = '>'
+                xscaled = x/L
+                plt.figure(1)
+                plt.scatter(xscaled,p[0:width],s=1,label=('Density at t=%.2f dx=%.2f'%(tmax,dx)))
+                
+                plt.figure(2)
+                plt.scatter(xscaled,acetyl,s=1,label=('Acetylation at t=%.2f dx=%.2f'%(tmax,dx)))
+                
+                plt.figure(3)
+                plt.scatter(np.arange(0,tmax,dt*10),pTot,s=1,label=('Total Density at t=%.2f dx=%.2f'%(tmax,dx)))
+                
+                plt.figure(4)
+                plt.scatter(np.arange(0,tmax,dt*10),aTot,s=1,label=('Total Acetylation at t=%.2f at dx=%.2f'%(tmax,dx)))
+        '''
+        pArray[step,:] = p[0:width]
+        pAnalyticArray[step,:] = scis.erfc(z)
+        aArray[step,:] = acetyl
+        aAnalyticArray[step,:] = acetylationfit
+        '''
+        
         step += 1          
         tend=time.time()
         trun = (tend-tstart)/60 #In minutes
@@ -143,6 +174,23 @@ tTotend=time.time()
 trun = (tTotend-tTotstart)/60
 print('Total Time Ran: %.2f'%trun)
 parameterString = ' dt (s)=%.2e \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
+
+plt.figure(1)
+plt.xlabel('x scaled (x/L)')
+plt.ylabel('Density')
+plt.legend()
+plt.figure(2)
+plt.xlabel('x scaled (x/L)')
+plt.ylabel('Acetylation')
+plt.legend()
+plt.figure(3)
+plt.xlabel('time (s)')
+plt.ylabel('Total Density (N(t))')
+plt.legend()
+plt.figure(4)
+plt.xlabel('time (s)')
+plt.ylabel('Total Acetylation (A(t))')
+plt.legend()
 
 plt.figure()
 ax = plt.gca()
