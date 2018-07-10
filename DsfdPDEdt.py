@@ -53,9 +53,9 @@ D = D0/(dx**2)
 
 ### Plotting Cutoffs
 base = 2
-Samples = 5
+Samples = 6
 tstart = time.time()
-tmaxArray = np.logspace(-1,Samples,Samples+2,base=base)
+tmaxArray = np.logspace(5,Samples+5,Samples+1,base=base)
 #MaxDensityResidual = np.zeros( (np.size(dxArray),int(m.log(tmax,2)+2)) )
 
 pArray = np.empty((np.size(tmaxArray),width))
