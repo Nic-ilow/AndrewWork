@@ -63,6 +63,9 @@ pAnalyticArray = np.zeros_like(pArray)
 pTotArray = np.zeros_like(pArray)
 pTotAnalyticalArray = np.zeros_like(pArray)
 
+densityExperiment = np.zeros( (np.size(tmaxArray) , width) )
+acetylExperiment = np.zeros_like(densityExperiment)
+
 DensityResidual = np.zeros( width )
 AcetylResidual = np.zeros_like(DensityResidual)
 NetDensityResidual = np.zeros_like(DensityResidual)
@@ -135,8 +138,8 @@ while telapsed<=tmax:
                         plt.figure(2)
                         plt.plot(x/L,acetyl,label='t=%.2f (s)'%tmaxArray[counter2])
                         
-                        #densityExperiment[counter2,:] = p[0:width]
-                        #acetylExperiment[counter2,:] = acetyl
+                        densityExperiment[counter2,:] = p[0:width]
+                        acetylExperiment[counter2,:] = acetyl
                         print(telapsed)
                         counter2+=1
 
