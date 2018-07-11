@@ -50,18 +50,18 @@ width = np.size(x)
 ### pTot and aTot plotting array
 tArray = np.arange(0,tmax,dt*10)
 
-pscaleArray=np.logspace(-5,2,8,base=2)
+arateArray=np.logspace(-5,3,9,base=2)
 #pscaleArray = np.linspace(0.1,1,9)
-pTotArray = np.zeros( (np.size(pscaleArray) , int(int(tmax/dt+1)/10)+1) ) 
+pTotArray = np.zeros( (np.size(arateArray) , int(int(tmax/dt+1)/10)+1) ) 
 aTotArray = np.zeros_like(pTotArray)
-densityArray = np.zeros( (np.size(pscaleArray) , width) )
+densityArray = np.zeros( (np.size(arateArray) , width) )
 acetylArray = np.zeros_like(densityArray)
 
 ### Initializing counters and a timer 
 counter = 0
 tstart = time.time()
 
-for pscale in pscaleArray:
+for arate in arateArray:
         
         telapsed = 0
         ### Array Pre-allocation
@@ -93,7 +93,7 @@ for pscale in pscaleArray:
                         pTot[int(counter2/10)] = sum(p[0:width]) 
                         aTot[int(counter2/10)] = sum(acetyl)
                         
-                        if pscale==pscaleArray[-1]:
+                        if arate==arateArray[-1]:
                                 aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed+dt))[0] 
                 counter2+=1
 
@@ -118,23 +118,23 @@ print(trun)
 
 ### PLOTTING
 parameterString = ' dt (s)=%.2e \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
-for i in np.arange(np.size(pscaleArray)):
+for i in np.arange(np.size(arateArray)):
                 
         plt.figure(1)
         plt.xlabel('x/L')
         plt.ylabel('p(x)')
-        plt.plot(x/L,densityArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.plot(x/L,densityArray[i,:],label=('arate = %.2e'%arateArray[i]))
 
         plt.figure(2)
         plt.xlabel('x/L')
         plt.ylabel('a(x)')
-        plt.plot(x/L,acetylArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.plot(x/L,acetylArray[i,:],label=('arate = %.2e'%arateArray[i]))
         #plt.plot(x/L,acetylationfit)
 
         plt.figure(3)
         plt.xlabel('time (s)')
         plt.ylabel('N(t)')
-        plt.plot(tArray,pTotArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.plot(tArray,pTotArray[i,:],label=('arate = %.2e'%arateArray[i]))
         ax=plt.gca()
         ax.set_xscale('log')
         ax.set_yscale('log')
@@ -143,7 +143,7 @@ for i in np.arange(np.size(pscaleArray)):
         plt.figure(4)
         plt.xlabel('time (s)')
         plt.ylabel('A(t)')
-        plt.plot(tArray,aTotArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.plot(tArray,aTotArray[i,:],label=('arate = %.2e'%arateArray[i]))
         ax=plt.gca()
         ax.set_xscale('log')
         ax.set_yscale('log')
