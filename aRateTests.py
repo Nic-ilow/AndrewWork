@@ -37,7 +37,7 @@ def acetylAnalytical(x,telapsed):
        
 
 ### Length and Steps
-L = 6000
+L = 3000
 
 ### Calculated values, D for phenomenological, and Stability limit for dt
 D = D0/(dx**2)
@@ -54,9 +54,9 @@ arateArray=np.logspace(-5,3,9,base=2)
 #pscaleArray = np.linspace(0.1,1,9)
 pTotArray = np.zeros( (np.size(arateArray) , int(int(tmax/dt+1)/10)+1) ) 
 aTotArray = np.zeros_like(pTotArray)
+aTotAnalyticalArray = np.zeros_like(aTotArray)
 densityArray = np.zeros( (np.size(arateArray) , width) )
 acetylArray = np.zeros_like(densityArray)
-
 ### Initializing counters and a timer 
 counter = 0
 tstart = time.time()
@@ -82,7 +82,7 @@ for arate in arateArray:
                 
                 p_1[1:width] = p[1:width] +  dt * ( Dsfd[0:width-1]*p[0:width-1] + Dsfd[2:width+1]*p[2:width+1] - Dsfd[1:width]*2*p[1:width]) 
                 acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
-
+                print(acetyl[0])
                 telapsed += dt                     
 
                 p,p_1 = p_1,p # Updating concentration array
@@ -92,13 +92,13 @@ for arate in arateArray:
                 if (counter2%10)==0:
                         pTot[int(counter2/10)] = sum(p[0:width]) 
                         aTot[int(counter2/10)] = sum(acetyl)
-                        
-                        if arate==arateArray[-1]:
-                                aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed+dt))[0] 
+                        aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
+                
                 counter2+=1
 
         pTotArray[counter,:] = pTot
         aTotArray[counter,:] = aTot
+        aTotAnalyticalArray[counter,:] = aTotAnalytical
         densityArray[counter,:] = p[0:width]
         acetylArray[counter,:] = acetyl
         
@@ -110,7 +110,7 @@ z = x/np.sqrt(4*D0*telapsed+dt) #Variable to make next equations easier to write
 acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ) 
 densityfit = scis.erfc(z)
 
-pTotAnalytical = p0 * np.sqrt(4*D*(tArray+dt)/np.pi)
+pTotAnalytical = p0 * np.sqrt(4*D*(tArray)/np.pi)
 
 tend=time.time()
 trun = (tend-tstart)/60 #In minutes
@@ -119,42 +119,39 @@ print(trun)
 ### PLOTTING
 parameterString = ' dt (s)=%.2e \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
 for i in np.arange(np.size(arateArray)):
-                
-        plt.figure(1)
-        plt.xlabel('x/L')
-        plt.ylabel('p(x)')
-        plt.plot(x/L,densityArray[i,:],label=('arate = %.2e'%arateArray[i]))
-
         plt.figure(2)
         plt.xlabel('x/L')
         plt.ylabel('a(x)')
         plt.plot(x/L,acetylArray[i,:],label=('arate = %.2e'%arateArray[i]))
         #plt.plot(x/L,acetylationfit)
 
-        plt.figure(3)
-        plt.xlabel('time (s)')
-        plt.ylabel('N(t)')
-        plt.plot(tArray,pTotArray[i,:],label=('arate = %.2e'%arateArray[i]))
-        ax=plt.gca()
-        ax.set_xscale('log')
-        ax.set_yscale('log')
-
-
         plt.figure(4)
         plt.xlabel('time (s)')
         plt.ylabel('A(t)')
-        plt.plot(tArray,aTotArray[i,:],label=('arate = %.2e'%arateArray[i]))
+        plt.scatter(tArray,aTotArray[i,:],label=('arate = %.2e'%arateArray[i]),s=1)
+        plt.plot(tArray,aTotAnalyticalArray[i,:],label=('arate = %.2e Analytical'%arateArray[i]))
         ax=plt.gca()
         ax.set_xscale('log')
         ax.set_yscale('log')
 
-plt.figure(1)
-plt.legend()
+ 
 plt.figure(2)
-plt.legend()
-plt.figure(3)
 plt.legend()
 plt.figure(4)
 plt.legend()
+       
+plt.figure(1)
+plt.xlabel('x/L')
+plt.ylabel('p(x)')
+plt.plot(x/L,densityArray[0,:],label=('arate = %.2e'%arateArray[i]))
+plt.legend()
 
+plt.figure(3)
+plt.xlabel('time (s)')
+plt.ylabel('N(t)')
+plt.plot(tArray,pTotArray[0,:],label=('arate = %.2e'%arateArray[i]))
+ax=plt.gca()
+ax.set_xscale('log')
+ax.set_yscale('log')
+plt.legend()
 plt.show()
