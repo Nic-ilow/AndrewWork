@@ -48,7 +48,7 @@ width = np.size(x)
 
 
 ### pTot and aTot plotting array
-tArray = np.arange(0,tmax,dt*10)
+tArray = np.arange(dt,tmax+dt,dt*10)
 
 arateArray=np.logspace(-5,3,9,base=2)
 #pscaleArray = np.linspace(0.1,1,9)
@@ -57,6 +57,7 @@ aTotArray = np.zeros_like(pTotArray)
 aTotAnalyticalArray = np.zeros_like(aTotArray)
 densityArray = np.zeros( (np.size(arateArray) , width) )
 acetylArray = np.zeros_like(densityArray)
+acetylfitArray = np.zeros_like(acetylArray)
 ### Initializing counters and a timer 
 counter = 0
 tstart = time.time()
@@ -82,7 +83,7 @@ for arate in arateArray:
                 
                 p_1[1:width] = p[1:width] +  dt * ( Dsfd[0:width-1]*p[0:width-1] + Dsfd[2:width+1]*p[2:width+1] - Dsfd[1:width]*2*p[1:width]) 
                 acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
-                print(acetyl[0])
+                #print(acetyl[0])
                 telapsed += dt                     
 
                 p,p_1 = p_1,p # Updating concentration array
@@ -95,22 +96,24 @@ for arate in arateArray:
                         aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
                 
                 counter2+=1
-
+ 
+        z = x/np.sqrt(4*D0*telapsed) #Variable to make next equations easier to write                                    
+        acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
+        
         pTotArray[counter,:] = pTot
         aTotArray[counter,:] = aTot
         aTotAnalyticalArray[counter,:] = aTotAnalytical
         densityArray[counter,:] = p[0:width]
         acetylArray[counter,:] = acetyl
+        acetylfitArray[counter,:] = acetylationfit
         
         print(telapsed)
         counter+=1
 
-z = x/np.sqrt(4*D0*telapsed+dt) #Variable to make next equations easier to write                                    
-
-acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ) 
 densityfit = scis.erfc(z)
 
-pTotAnalytical = p0 * np.sqrt(4*D*(tArray)/np.pi)
+pTotAnalytical = (p0 * np.sqrt(4*D*(tArray)/np.pi))
+
 
 tend=time.time()
 trun = (tend-tstart)/60 #In minutes
@@ -122,8 +125,8 @@ for i in np.arange(np.size(arateArray)):
         plt.figure(2)
         plt.xlabel('x/L')
         plt.ylabel('a(x)')
-        plt.plot(x/L,acetylArray[i,:],label=('arate = %.2e'%arateArray[i]))
-        #plt.plot(x/L,acetylationfit)
+        plt.scatter(x/L,acetylArray[i,:],s=1,label=('arate = %.2e'%arateArray[i]))
+        plt.plot(x/L,acetylfitArray[i,:],label=('arate = %.2e Analytical'%arateArray[i]))
 
         plt.figure(4)
         plt.xlabel('time (s)')
@@ -133,13 +136,25 @@ for i in np.arange(np.size(arateArray)):
         ax=plt.gca()
         ax.set_xscale('log')
         ax.set_yscale('log')
+        
+        plt.figure(5)
+        plt.xlabel('time (s)')
+        plt.ylabel('Ratio of aTot/aTotAnalytical')
+        plt.plot(tArray,aTotArray[i,:]/aTotAnalyticalArray[i,:],label=('arate = %.2e Analytical'%arateArray[i]))
+
 
  
 plt.figure(2)
 plt.legend()
 plt.figure(4)
 plt.legend()
-       
+plt.figure(5)
+ax = plt.gca()
+ax.set_xscale('log')
+#ax.set_yscale('log')
+
+plt.legend()
+
 plt.figure(1)
 plt.xlabel('x/L')
 plt.ylabel('p(x)')

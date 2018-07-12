@@ -37,7 +37,7 @@ def acetylAnalytical(x,telapsed):
        
 
 ### Length and Steps
-L = 3000
+L = 6000
 
 ### Calculated values, D for phenomenological, and Stability limit for dt
 D = D0/(dx**2)
@@ -82,9 +82,20 @@ tstart = time.time()
 
 while telapsed<=tmax: # Iterating the system of tmax amount of seconds
 
-        Dsfd = (D/(1+(p/pscale)+((p/pscale)**2))) # Updating the Single File Diffusion effects based on density at positions
+        if (counter%10)==0:
+                pTot[int(counter/10)] = sum(p[0:width])
+                pTotAnalytical[int(counter/10)] = p0 * np.sqrt(4*D0*telapsed/np.pi)/(dx)
         
-        p_1[1:width] = p[1:width] +  dt * ( Dsfd[0:width-1]*p[0:width-1] + Dsfd[2:width+1]*p[2:width+1] - Dsfd[1:width]*2*p[1:width]) 
+                aTot[int(counter/10)] = sum(acetyl)
+                aTotAnalytical[int(counter/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
+        counter+=1
+
+ 
+        #       Dsfd = (D/(1+(p/pscale)+((p/pscale)**2))) # Updating the Single File Diffusion effects based on density at positions
+        
+        #       p_1[1:width] = p[1:width] +  dt * ( Dsfd[0:width-1]*p[0:width-1] + Dsfd[2:width+1]*p[2:width+1] - Dsfd[1:width]*2*p[1:width]) 
+              
+        p_1[1:width] = p[1:width] +  dt * D *( p[0:width-1] + p[2:width+1] - 2*p[1:width]) # NO SINGLE FILE EFFECTS 
         acetyl[0:width] = acetyl[0:width] + (acetylmultiplicity - acetyl[0:width] ) * arate * dt * p[0:width] 
 
         telapsed += dt                     
@@ -93,14 +104,6 @@ while telapsed<=tmax: # Iterating the system of tmax amount of seconds
         p[0] = p0 # resetting the boundary condition
         p[width]=p[width-1] # Closed Tube Boundary
        
-        if (counter%10)==0:
-                pTot[int(counter/10)] = sum(p[0:width])
-                pTotAnalytical[int(counter/10)] = p0 * np.sqrt(4*D*telapsed/np.pi)
-        
-                aTot[int(counter/10)] = sum(acetyl)
-                aTotAnalytical[int(counter/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
-        counter+=1
-
         if counter2<7:
                 if abs(telapsed-tmaxArray[counter2])<=epsilon:
                         
@@ -161,42 +164,3 @@ plt.plot(tArray,aTotAnalytical)
 
 plt.show()
 
-'''
-plt.figure()
-ax = plt.gca()
-#ax.set_yscale('log')
-#ax.set_xscale('log')
-plt.scatter(x/L,DensityResidual,s=1,label=('Residual at t=%.2f'%tmax))
-plt.xlabel('xscaled (x/L)')
-plt.ylabel('Residual of Density')
-plt.legend()
-
-
-plt.figure()
-ax = plt.gca()
-#ax.set_yscale('log')
-#ax.set_xscale('log')
-plt.scatter(x/L,AcetylResidual,s=1,label=('Residual at t=%.2f'%tmax))
-plt.xlabel('x scaled (x/L)')
-plt.ylabel('Residual of Acetylation')
-plt.legend()
-
-fig = plt.figure()
-ax = plt.gca()
-#ax.set_yscale('log')
-#ax.set_xscale('log')
-plt.scatter(tArray,NetDensityResidual,s=1)
-plt.xlabel('time (s)')
-plt.ylabel('Residual of Total Density')
-
-plt.figure()
-ax = plt.gca()
-#ax.set_yscale('log')
-#ax.set_xscale('log')
-plt.scatter(tArray,NetAcetylResidual,s=1)
-plt.xlabel('time (s)')
-plt.ylabel('Max Residual of Total Acetylation')
-
-
-plt.show()
-'''

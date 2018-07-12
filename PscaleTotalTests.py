@@ -37,7 +37,7 @@ def acetylAnalytical(x,telapsed):
        
 
 ### Length and Steps
-L = 6000
+L = 3000
 
 ### Calculated values, D for phenomenological, and Stability limit for dt
 D = D0/(dx**2)
@@ -48,11 +48,11 @@ width = np.size(x)
 
 
 ### pTot and aTot plotting array
-tArray = np.arange(0,tmax,dt*10)
+tArray = np.arange(dt,tmax+dt,dt*10)
 
-pscaleArray=np.logspace(-5,2,8,base=2)
+pscaleArray=np.logspace(-2,3,6,base=10)
 #pscaleArray = np.linspace(0.1,1,9)
-pTotArray = np.zeros( (np.size(pscaleArray) , int(int(tmax/dt+1)/10)+1) ) 
+pTotArray = np.zeros( (np.size(pscaleArray) ,int(int(tmax/dt+1)/10+1) )) 
 aTotArray = np.zeros_like(pTotArray)
 densityArray = np.zeros( (np.size(pscaleArray) , width) )
 acetylArray = np.zeros_like(densityArray)
@@ -68,13 +68,13 @@ for pscale in pscaleArray:
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
         acetyl = np.zeros(width)
-        pTot = np.zeros(int(int(tmax/dt+1)/10)+1)
+        pTot = np.zeros((int(int(tmax/dt+1)/10+1)))
         aTot = np.zeros_like(pTot)
         aTotAnalytical =  np.zeros_like(aTot)
+        pTotAnalytical = np.zeros_like(aTotAnalytical)
         ### Boundary Condition
         p[0] = p0
         p[width-1] = 0
-
         counter2 = 0
         while telapsed<=tmax: # Iterating the system of tmax amount of seconds
 
@@ -89,12 +89,17 @@ for pscale in pscaleArray:
                 p[0] = p0 # resetting the boundary condition
                 p[width]=p[width-1] # Closed Tube Boundary
                
-                if (counter2%10)==0:
+                if (counter2%10==0):
                         pTot[int(counter2/10)] = sum(p[0:width]) 
                         aTot[int(counter2/10)] = sum(acetyl)
                         
                         if pscale==pscaleArray[-1]:
-                                aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed+dt))[0] 
+                                z = x/np.sqrt(4*D0*telapsed)
+                                pTotAnalytical[int(counter2/10)] = sum(scis.erfc(z))
+                                #pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D0*telapsed)
+                                acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
+                                aTotAnalytical[int(counter2/10)] = sum(acetylationfit)
+                                #aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0] 
                 counter2+=1
 
         pTotArray[counter,:] = pTot
@@ -105,36 +110,36 @@ for pscale in pscaleArray:
         print(telapsed)
         counter+=1
 
-z = x/np.sqrt(4*D0*telapsed+dt) #Variable to make next equations easier to write                                    
+z = x/np.sqrt(4*D0*telapsed) #Variable to make next equations easier to write                                    
 
 acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) ) 
 densityfit = scis.erfc(z)
 
-pTotAnalytical = p0 * np.sqrt(4*D*(tArray+dt)/np.pi)
+#pTotAnalytical = p0 * np.sqrt((4*D*(tArray)/np.pi))
 
 tend=time.time()
 trun = (tend-tstart)/60 #In minutes
 print(trun)
 
 ### PLOTTING
-parameterString = ' dt (s)=%.2e \np0=%.2f \nLength of Tubule (nm)=%.2f  '%(dt,p0,L)
+parameterString = 'arate=%.2f \n L=%.2f \n dx=%.2f'%(arate,L,dx)
 for i in np.arange(np.size(pscaleArray)):
                 
         plt.figure(1)
         plt.xlabel('x/L')
         plt.ylabel('p(x)')
-        plt.plot(x/L,densityArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.scatter(x/L,densityArray[i,:],s=1,label=('pscale = %.2e'%pscaleArray[i]))
 
         plt.figure(2)
         plt.xlabel('x/L')
         plt.ylabel('a(x)')
-        plt.plot(x/L,acetylArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.scatter(x/L,acetylArray[i,:],s=1,label=('pscale = %.2e'%pscaleArray[i]))
         #plt.plot(x/L,acetylationfit)
 
         plt.figure(3)
         plt.xlabel('time (s)')
         plt.ylabel('N(t)')
-        plt.plot(tArray,pTotArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.scatter(tArray,pTotArray[i,:],s=1,label=('pscale = %.2e'%pscaleArray[i]))
         ax=plt.gca()
         ax.set_xscale('log')
         ax.set_yscale('log')
@@ -143,18 +148,34 @@ for i in np.arange(np.size(pscaleArray)):
         plt.figure(4)
         plt.xlabel('time (s)')
         plt.ylabel('A(t)')
-        plt.plot(tArray,aTotArray[i,:],label=('pscale = %.2e'%pscaleArray[i]))
+        plt.scatter(tArray,aTotArray[i,:],s=1,label=('pscale = %.2e'%pscaleArray[i]))
         ax=plt.gca()
         ax.set_xscale('log')
         ax.set_yscale('log')
 
 plt.figure(1)
+plt.plot(x/L,densityfit,label='No SFD Analytical')
 plt.legend()
+plt.title(parameterString)
+
 plt.figure(2)
-plt.legend()
-plt.figure(3)
-plt.legend()
-plt.figure(4)
+plt.plot(x/L,acetylationfit,label='No SFD Analytical')
 plt.legend()
 
+plt.figure(3)
+plt.plot(tArray,pTotAnalytical,label='No SFD Analytical')
+plt.legend()
+
+plt.figure(4)
+plt.plot(tArray,aTotAnalytical,label='No SFD Analytical')
+plt.legend()
+
+plt.figure(5)
+plt.plot(tArray,pTotArray[i,:]/pTotAnalytical,marker='.',ms=1,label='Nt/NtAnalytical')
+plt.plot(tArray,aTotArray[i,:]/aTotAnalytical,marker='*',ms=1,label='At/AtAnalytical')
+ax=plt.gca()
+ax.set_xscale('log')
+plt.xlabel('time (s)')
+plt.ylabel('Ratio of Simulation/Analytical')
+plt.legend()
 plt.show()
