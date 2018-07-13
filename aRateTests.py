@@ -91,9 +91,9 @@ for arate in arateArray:
                 p[width]=p[width-1] # Closed Tube Boundary
                
                 if (counter2%10)==0:
-                        pTot[int(counter2/10)] = sum(p[0:width]) 
-                        aTot[int(counter2/10)] = sum(acetyl)
-                        aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed))[0] 
+                        pTot[int(counter2/10)] = sum(p[0:width-1]) 
+                        aTot[int(counter2/10)] = sum(acetyl[0:width-1])
+                        aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed),points=[.5,1.5])[0] 
                 
                 counter2+=1
  

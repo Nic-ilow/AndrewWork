@@ -95,11 +95,11 @@ for pscale in pscaleArray:
                         
                         if pscale==pscaleArray[-1]:
                                 z = x/np.sqrt(4*D0*telapsed)
-                                pTotAnalytical[int(counter2/10)] = sum(scis.erfc(z))
-                                #pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D0*telapsed)
+                                #pTotAnalytical[int(counter2/10)] = sum(scis.erfc(z))
+                                pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D0*telapsed/np.pi)/dx 
                                 acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
-                                aTotAnalytical[int(counter2/10)] = sum(acetylationfit)
-                                #aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0] 
+                                #aTotAnalytical[int(counter2/10)] = sum(acetylationfit)
+                                aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0] 
                 counter2+=1
 
         pTotArray[counter,:] = pTot
@@ -170,12 +170,17 @@ plt.figure(4)
 plt.plot(tArray,aTotAnalytical,label='No SFD Analytical')
 plt.legend()
 
+pTotResidual = abs(pTotArray[i,:] / pTotAnalytical)
+aTotResidual = abs(aTotArray[i,:] / aTotAnalytical)
+
 plt.figure(5)
-plt.plot(tArray,pTotArray[i,:]/pTotAnalytical,marker='.',ms=1,label='Nt/NtAnalytical')
-plt.plot(tArray,aTotArray[i,:]/aTotAnalytical,marker='*',ms=1,label='At/AtAnalytical')
-ax=plt.gca()
-ax.set_xscale('log')
+ax1=plt.gca()
+plt.plot(tArray,(pTotResidual),marker='.',ms=3,label='Nt/NtAnalytical')
+plt.plot(tArray,(aTotResidual),marker='*',ms=3,label='At/AtAnalytical')
+ax1.set_xscale('log')
+#ax1.set_yscale('log')
 plt.xlabel('time (s)')
-plt.ylabel('Ratio of Simulation/Analytical')
+plt.ylabel('Ratio')
 plt.legend()
+
 plt.show()
