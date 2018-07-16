@@ -43,12 +43,14 @@ L = 3000
 D = D0/(dx**2)
 dt = (dx**2)/D0*.5
 epsilon = dt/2
+
+### Setting Tube Array Discretization
 x = np.arange(0,L,dx)
 width = np.size(x)       
 
-
 ### pTot and aTot plotting array
 tArray = np.arange(dt,tmax+dt,dt*10)
+
 
 pscaleArray=np.logspace(-2,3,6,base=10)
 #pscaleArray = np.linspace(0.1,1,9)
