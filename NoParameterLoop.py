@@ -15,6 +15,7 @@ parser.add_argument('-p0','--p0',default=1)
 parser.add_argument('-arate','--arate',default=100)
 parser.add_argument('-am','--am',default=1)
 parser.add_argument('-pscale','--pscale',default=1000)
+parser.add_argument('-dt','--dt',default=1e-6)
 args = parser.parse_args()
 
 global p0,arate,acetylmultiplicity,D0
@@ -36,14 +37,15 @@ def acetylAnalytical(x,telapsed):
         return  acetyl
 
 def densityAnalytical(x,telapsed):
-        z = x / np.sqrt(4*D0*telapsed)
+        z = x / np.sqrt(4*D0*(telapsed))
         return scis.erfc(z)
 
 ### Length and Steps
 L = 3000
 
 ### Calculated values, D for phenomenological, and Stability limit for dt
-dt = 1e-6
+#dt = 1e-6
+dt = float(args.dt)
 epsilon = dt/2
 print(D0*dt)
 ### Setting Tube Array Discretization
@@ -51,7 +53,7 @@ x = np.arange(0,L,dx)
 width = np.size(x)       
 
 ### pTot and aTot plotting array
-tArray = np.arange(dt,tmax+dt,dt*10)
+tArray = np.arange(1*dt,tmax+dt,dt*10)
 
 ### Initializing counters and a timer 
 tstart = time.time()
@@ -67,7 +69,7 @@ p_3 = np.zeros_like(p_2)
 
 acetyl = np.zeros(width)
 acetyl2 = np.zeros(width)
-
+#pTot = np.zeros(2)
 pTot = np.zeros((int(int(tmax/dt+1)/10+1)))
 aTot = np.zeros_like(pTot)
 pTot2 = np.zeros_like(pTot)
@@ -93,6 +95,8 @@ while telapsed<=tmax: # Iterating the system of tmax amount of seconds
          
         telapsed += dt                     
 
+        #counter2+=1
+
         p,p_1 = p_1,p # Updating concentration array
         p[0] = p0 # resetting the boundary condition
         p[width]=p[width-1] # Closed Tube Boundary
@@ -105,24 +109,31 @@ while telapsed<=tmax: # Iterating the system of tmax amount of seconds
                 pTot[int(counter2/10)] = sum(p[1:width]) * dx
                 aTot[int(counter2/10)] = sum(acetyl) * dx
                 
-                pTot2[int(counter2/10)] = sum(p_2[1:width]) * dx
+                pTot2[int(counter2/10)] = sum(p_2[1:width]*dx) 
                 aTot2[int(counter2/10)] = sum(acetyl2) * dx
                 
                 
 
-                z = x/np.sqrt(4*D0*telapsed)
-                #pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D0*telapsed/np.pi)
-                pTotAnalytical[int(counter2/10)] = scii.quad(densityAnalytical,dx,x[width-1],args=(telapsed),epsabs=1e-15)[0]
+                z = x/np.sqrt(4*D0*(telapsed))
+                
+                pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D0*(telapsed)/np.pi)
+                #pTotAnalytical[int(counter2/10)-1] = scii.quad(densityAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0]
+                #pTotAnalytical[int(counter2/10)-1] = sum(scis.erfc(z))
                 acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
-                aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,dx,x[width-1],args=(telapsed),epsabs=1e-15)[0] 
-        
+                aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0] 
         counter2+=1
-
+        #p_2[0] = p0
 print(telapsed)
 tend=time.time()
 trun = (tend-tstart)/60 #In minutes
 print(trun)
 
+print('residual')
+print(pTot2[0]-pTotAnalytical[0])
+print('max residual')
+print(max(abs(pTot2-pTotAnalytical)))
+
+'''
 ### PLOTTING
 parameterString = 'arate=%.2f \n L=%.2f \n dx=%.2f'%(arate,L,dx)
 
@@ -177,8 +188,8 @@ plt.figure()
 ax=plt.gca()
 ax.set_xscale('log')
 #ax.set_yscale('log')
-plt.scatter(tArray , pTot/pTotAnalytical , marker=',' , s=2 , label='SFD over Analytical')
-plt.scatter(tArray , pTot2/pTotAnalytical , marker='*' , s=2 , label='No SFD over Analytical')
+#plt.scatter(tArray , pTot/pTotAnalytical , marker=',' , s=2 , label='SFD over Analytical')
+plt.scatter(tArray , abs(pTot2-pTotAnalytical) , marker='*' , s=2 , label='No SFD over Analytical')
 plt.xlabel('time (s)')
 plt.ylabel('Ratio')
 plt.title('Ratio of SFD and No SFD vs Analytical')
@@ -186,3 +197,4 @@ plt.legend()
 
 
 plt.show()
+'''
