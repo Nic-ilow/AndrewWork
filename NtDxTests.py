@@ -57,9 +57,9 @@ tArray = np.arange(1*dt,tmax+dt,dt*10)
 
 ### Initializing counters and a timer 
 tstart = time.time()
-dxArray = np.logspace(-3,5,9,base=2)
+dxArray = np.logspace(-1,5,7,base=2)
 pTotResidual = np.zeros_like(dxArray)
-
+pTotSFDResidual = np.zeros_like(pTotResidual)
 counter=0
 for dx in dxArray:
         ### Array Pre-allocation
@@ -124,7 +124,9 @@ for dx in dxArray:
                         aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0] 
                 counter2+=1
                 #p_2[0] = p0
+        print((time.time()-tstart)/60)
         pTotResidual[counter] = max(abs(pTot2-pTotAnalytical))
+        pTotSFDResidual[counter] = max(abs(pTot-pTotAnalytical)) 
         counter+=1
 print(telapsed)
 tend=time.time()
@@ -136,6 +138,16 @@ print(pTot2[0]-pTotAnalytical[0])
 print('max residual')
 print(max(abs(pTot2-pTotAnalytical)))
 
+plt.figure()
+ax=plt.gca()
+ax.set_xscale('log')
+ax.set_yscale('log')
+plt.scatter(dxArray,pTotResidual,s=2,label='Vanilla Residual')
+plt.scatter(dxArray,pTotSFDResidual,s=2,label='SFD Residual High Pscale')
+plt.legend()
+plt.xlabel('dx')
+plt.ylabel('N(t) residual')
+plt.show()
 '''
 ### PLOTTING
 parameterString = 'arate=%.2f \n L=%.2f \n dx=%.2f'%(arate,L,dx)
