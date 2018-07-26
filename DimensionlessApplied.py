@@ -17,35 +17,34 @@ parser = argparse.ArgumentParser(description='Command line inputs:')
 #parser.add_argument('-pscale','--pscale',default=1000)
 #parser.add_argument('-dt','--dt',default=1e-6)
 
-parser.add_argument('-du','--du',default=.04) ### SCALED OUT LENGTH STEP
-parser.add_argument('-uLength','--uLength',default=17) ### SCALED OUT LENGTH OF SYSTEM
-parser.add_argument('-dv','--dv',default=8e-7) ### SCALED OUT TIME STEP
-parser.add_argument('-vmax','--vmax',default=0.8) ### SCALED OUT TMAX
-parser.add_argument('-pscale','--pscale',default=1000.0)
-parser.add_argument('-p0','--p0',default=1.0)
+#parser.add_argument('-du','--du',default=.04) ### SCALED OUT LENGTH STEP
+#parser.add_argument('-uLength','--uLength',default=17) ### SCALED OUT LENGTH OF SYSTEM
+#parser.add_argument('-dv','--dv',default=8e-7) ### SCALED OUT TIME STEP
+#parser.add_argument('-vmax','--vmax',default=0.8) ### SCALED OUT TMAX
+#parser.add_argument('-pscale','--pscale',default=1000.0)
+#parser.add_argument('-p0','--p0',default=1.0)
+#parser.add_argument('-dx','--dx',default=1e-9)
+parser.add_argument('-p0hat','--p0hat',default=1e-4)
+parser.add_argument('-dxbar','--dxbar',default=6.0)
+parser.add_argument('-xbarmax','--xbarmax',default=1800.0)
+parser.add_argument('-dtbar','--dtbar',default=.1)
+parser.add_argument('-tbarmax','--tbarmax',default=1.0e5)
 args = parser.parse_args()
 
-du = float(args.du)
-uLength = float(args.uLength)
-dv = float(args.dv)
-vmax = float(args.vmax)
-pscale = float(args.pscale)
-p0 = float(args.p0)
+p0hat = float(args.p0hat)
+dxbar = float(args.dxbar)
+xbarmax = float(args.xbarmax)
+dtbar = float(args.dtbar)
+tbarmax = float(args.tbarmax)
 
+xbar = np.arange(0,xbarmax,dxbar)
+tbar = np.arange(0,tbarmax,dtbar)
 
-### Length and Step #### SCALING STUFF OUTs
-
-u = np.arange(0,uLength,du)
-v = np.arange(0,vmax,dv)
-
-#### SCALE PARAMETERS
-p0hat = p0/(1+p0/pscale+(p0/pscale)**2)## Calculated values, D for phenomenological, and Stability limit for dt
-
-epsilon = dv/2
-width = np.size(u)       
+epsilon = dtbar/2
+width = np.size(xbar)       
 
 ### pTot and aTot plotting array
-tArray = np.arange(1*dv,vmax+dv,dv*10)
+tArray = np.arange(1*dtbar,tbarmax+dtbar,dtbar*10)
 
 ### Initializing counters and a timer 
 tstart = time.time()
@@ -56,7 +55,7 @@ p_1 = np.zeros_like(p)
 telapsed = 0
 
 acetyl = np.zeros(width)
-pTot = np.zeros((int(int(vmax/dv+1)/10+1)))
+pTot = np.zeros((int(int(tbarmax/dtbar+1)/10+1)))
 aTot = np.zeros_like(pTot)
 aTotAnalytical =  np.zeros_like(aTot)
 pTotAnalytical = np.zeros_like(aTotAnalytical)
@@ -66,12 +65,12 @@ p[0] = p0hat
 p[width-1] = 0
 counter2 = 0
 
-while telapsed<=vmax: # Iterating the system of tmax amount of seconds
-        pscaler = 1+p/pscale+(p/pscale)**2     
-        p_1[1:width] = p[1:width] +   dv *  ( (p[0:width-1]*pscaler[0:width-1] + p[2:width+1]*pscaler[2:width+1] - 2*p[1:width]*pscaler[1:width]) / (du**2))             ### NO SFD
-        acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dv * p[0:width] ### NO SFD
+while telapsed<=tbarmax: # Iterating the system of tmax amount of seconds
+        pscaler = 1+p+p**2     
+        p_1[1:width] = p[1:width] +   dtbar *  ( (p[0:width-1]/pscaler[0:width-1] + p[2:width+1]/pscaler[2:width+1] - 2*p[1:width]/pscaler[1:width]) / (dxbar**2))  
+        acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width] ### NO SFD
          
-        telapsed += dv                     
+        telapsed += dtbar                     
 
         #counter2+=1
 
@@ -80,9 +79,8 @@ while telapsed<=vmax: # Iterating the system of tmax amount of seconds
         p[width]=p[width-1] # Closed Tube Boundary
 
         if (counter2%10==0):
-                pTot[int(counter2/10)] = sum(p[1:width]) * du
-                aTot[int(counter2/10)] = sum(acetyl) * du
-                
+                pTot[int(counter2/10)] = sum(p[1:width]) * dxbar
+                aTot[int(counter2/10)] = sum(acetyl) * dxbar
                 #z = xbar/np.sqrt(4*D*(telapsed))
                 
                 #pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D*(telapsed)/np.pi)
@@ -103,7 +101,7 @@ print((time.time()-tstart)/60)
 #print(pTot2[0]-pTotAnalytical[0])
 #print('max residual')
 #print(max(abs(pTot2-pTotAnalytical)))
-plt.scatter(u,p[0:width],s=1)
+plt.scatter(xbar[1:width],p[1:width],s=1)
 plt.show()
 '''
 ### PLOTTING
