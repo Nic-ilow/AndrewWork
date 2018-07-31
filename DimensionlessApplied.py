@@ -28,8 +28,8 @@ epsilon = dtbar/2
 width = np.size(xbar)       
 
 ### pTot and aTot plotting array
-tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-1
-p2 = np.logspace(-2,2,5,base=4)
+tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))
+p2 = np.logspace(-5,2,8,base=2)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -79,8 +79,8 @@ for p0hat in p2:
                 p[width]=p[width-1] # Closed Tube Boundary
         pArray[counter,:] = p[0:width]
         aArray[counter,:] = acetyl[0:width]
-        pTotArray[counter,:] = aTot
-        aTotArray[counter,:] = pTot
+        pTotArray[counter,:] = pTot
+        aTotArray[counter,:] = aTot
         counter+=1
         print((time.time()-tstart)/60)
 plt.figure(3)
