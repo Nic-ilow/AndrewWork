@@ -29,7 +29,7 @@ width = np.size(xbar)
 
 ### pTot and aTot plotting array
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))
-p2 = np.logspace(-5,2,8,base=2)
+p2 = np.logspace(-4,3,8,base=2)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -54,7 +54,7 @@ for p0hat in p2:
         while telapsed<=tbarmax: # Iterating the system of tmax amount of seconds
 
                 if abs(tArray[counter2]-telapsed)<=epsilon:
-                        pTot[counter2] = sum((p[0:width]/p0hat)) * dxbar
+                        pTot[counter2] = sum((p[0:width])) * dxbar
                         aTot[counter2] = sum(acetyl) * dxbar
                         #z = xbar/np.sqrt(4*D*(telapsed))
                         
@@ -89,22 +89,22 @@ plt.figure(4)
 ax4 = plt.gca()
 for i , value in enumerate(p2): 
         plt.figure(1)
-        plt.scatter(xbar[1:width],pArray[i,1:width]/value,s=1,label=('p0hat = %.2e'%value))
+        plt.plot(xbar,pArray[i,0:width]/value,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless length')
         plt.ylabel('phat/phat0')
 
         plt.figure(2)
-        plt.scatter(xbar[1:width],aArray[i,1:width],s=1,label=('p0hat = %.2e'%value))
+        plt.plot(xbar,aArray[i,:],label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless length')
         plt.ylabel('ahat')
         
         plt.figure(3)
-        plt.scatter(tArray , pTotArray[i,:],s=1,label=('p0hat = %.2e'%value))
+        plt.plot(tArray , pTotArray[i,:],label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
        
         plt.figure(4)
-        plt.scatter(tArray , aTotArray[i,:],s=1,label=('p0hat = %.2e'%value))
+        plt.plot(tArray , aTotArray[i,:],label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('A(t)')
        
