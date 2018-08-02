@@ -20,25 +20,27 @@ dxbar = float(args.dxbar)
 xbarmax = float(args.xbarmax)
 dtbar = float(args.dtbar)
 tbarmax = float(args.tbarmax)
-
-xbar = np.arange(0,xbarmax,dxbar)
-tbar = np.arange(0,tbarmax,dtbar)
-
 epsilon = dtbar/2
-width = np.size(xbar)       
 
 ### pTot and aTot plotting array
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))
-p2 = np.logspace(-4,3,8,base=2)
-pArray = np.zeros((np.size(p2) , width))        
-aArray = np.zeros_like(pArray)
-pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
-aTotArray = np.zeros_like(pTotArray)
+dxbarArray = np.logspace(-5,-1,5,base=2)
+
 ### Initializing counters and a timer 
 tstart = time.time()
 counter=0
 ### Array Pre-allocation
-for p0hat in p2:
+plt.figure(3)
+ax3 = plt.gca()
+plt.figure(4)
+ax4 = plt.gca()
+
+for dxbar in dxbarArray: 
+
+        xbar = np.arange(0,xbarmax,dxbar)
+        tbar = np.arange(0,tbarmax,dtbar)
+        width = np.size(xbar)       
+ 
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
         telapsed = 0
@@ -56,7 +58,13 @@ for p0hat in p2:
                 if abs(tArray[counter2]-telapsed)<=epsilon:
                         pTot[counter2] = sum((p[0:width])) * dxbar
                         aTot[counter2] = sum(acetyl) * dxbar
-
+                        #z = xbar/np.sqrt(4*D*(telapsed))
+                        
+                        #pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D*(telapsed)/np.pi)
+                        #pTotAnalytical[int(counter2/10)-1] = scii.quad(densityAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0]
+                        #pTotAnalytical[int(counter2/10)-1] = sum(scis.erfc(z))
+                        #acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
+                        #aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,xbar[width-1],args=(telapsed),epsabs=1e-15)[0] 
                         if counter2<np.size(tArray)-1:
                                 counter2+=1
 
@@ -66,40 +74,34 @@ for p0hat in p2:
                  
                 telapsed += dtbar                     
 
+                #counter2+=1
+
                 p,p_1 = p_1,p # Updating concentration array
                 p[0] = p0hat # resetting the boundary condition
                 p[width]=p[width-1] # Closed Tube Boundary
-        pArray[counter,:] = p[0:width]
-        aArray[counter,:] = acetyl[0:width]
-        pTotArray[counter,:] = pTot
-        aTotArray[counter,:] = aTot
-        counter+=1
-        print((time.time()-tstart)/60)
-plt.figure(3)
-ax3 = plt.gca()
-plt.figure(4)
-ax4 = plt.gca()
-for i , value in enumerate(p2): 
+
         plt.figure(1)
-        plt.plot(xbar,pArray[i,0:width]/value,label=('p0hat = %.2e'%value))
+        plt.scatter(xbar,p[0:width]/p0hat,s=1,label=('dxbar = %.2e'%dxbar))
         plt.xlabel('Dimensionless length')
         plt.ylabel('phat/phat0')
 
         plt.figure(2)
-        plt.plot(xbar,aArray[i,:],label=('p0hat = %.2e'%value))
+        plt.scatter(xbar,acetyl,s=1,label=('dxbar = %.2e'%dxbar))
         plt.xlabel('Dimensionless length')
         plt.ylabel('ahat')
         
         plt.figure(3)
-        plt.plot(tArray , pTotArray[i,:],label=('p0hat = %.2e'%value))
+        plt.scatter(tArray , pTot,s=1,label=('dxbar = %.2e'%dxbar))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
        
         plt.figure(4)
-        plt.plot(tArray , aTotArray[i,:],label=('p0hat = %.2e'%value))
+        plt.scatter(tArray , aTot,s=1,label=('dxbar = %.2e'%dxbar))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('A(t)')
-       
+        
+        counter+=1
+        print((time.time()-tstart)/60)
 
 plt.figure(1)
 plt.legend()
