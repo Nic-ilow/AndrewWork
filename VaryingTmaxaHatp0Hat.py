@@ -1,6 +1,7 @@
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import argparse
 import scipy.special as scis
 import scipy.integrate as scii
@@ -33,8 +34,9 @@ width = np.size(xbar)
 
 ### pTot and aTot plotting array
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))
-p2 = np.logspace(a,b,b-a+1,base=2)
-pArray = np.zeros((np.size(p2) , width))        
+p2 = np.logspace(a,b,b-a+1,base=10)
+tmaxset = np.array( [tbarmax/4 , tbarmax/2 , tbarmax] )
+pArray = np.zeros((np.size(p2) ,np.size(tmaxset), width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
 aTotArray = np.zeros_like(pTotArray)
@@ -46,7 +48,8 @@ for p0hat in p2:
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
         telapsed = 0
-        dtbar = min(0.5/p0hat , 0.10*dxbar**2) 
+        dtbar = min(0.5/p0hat , 0.10*dxbar**2)
+        epsilon = dtbar/2
         acetyl = np.zeros(width)
         pTot = np.zeros(np.size(tArray))
         aTot = np.zeros_like(pTot)
@@ -54,8 +57,9 @@ for p0hat in p2:
         p[0] = p0hat
         p[width-1] = 0
         counter2 = 0
+        j = 0
         print(dtbar)
-       
+         
         while telapsed<=tbarmax: # Iterating the system of tmax amount of seconds
                 
                 pscaler = 1+p+p**2     
@@ -67,27 +71,27 @@ for p0hat in p2:
                 p,p_1 = p_1,p # Updating concentration array
                 p[0] = p0hat # resetting the boundary condition
                 p[width]=p[width-1] # Closed Tube Boundary
-       
-        pArray[counter,:] = p[0:width]
-        aArray[counter,:] = acetyl[0:width]
-
+                if (abs(telapsed-tbarmax/4)<=epsilon or abs(telapsed-tbarmax/2)<=epsilon) or abs(telapsed-tbarmax)<=epsilon and j<3: 
+                        pArray[counter,j,:] = p[0:width]
+                        aArray[counter,j,:] = acetyl[0:width]
+                        j+=1
         counter+=1
         print((time.time()-tstart)/60)
 
 for i , value in enumerate(p2): 
-        plt.figure(1)
-        plt.scatter(xbar,pArray[i,0:width]/value,s=1,label=('p0hat = %.2e'%value))
+        fig = plt.figure(i+1)
+        for j , value2 in enumerate(tmaxset):
+                plt.scatter(xbar,pArray[i,j,0:width]/value,s=1,label=('t = %.2e'%value2))
         plt.xlabel('Dimensionless length')
         plt.ylabel('phat/phat0')
-
-        plt.figure(2)
-        plt.scatter(xbar,aArray[i,:],s=1,label=('p0hat = %.2e'%value))
+        plt.legend()
+        plt.title('p0hat = %.2e'%value)
+        fig = plt.figure(i+4)
+        for j , value2 in enumerate(tmaxset):
+                plt.scatter(xbar,aArray[i,j,:],s=1,label=('t = %.2e'%value2))
         plt.xlabel('Dimensionless length')
         plt.ylabel('ahat')
-      
+        plt.legend()
+        plt.title('p0hat = %.2e'%value)
 
-plt.figure(1)
-plt.legend()
-plt.figure(2)
-plt.legend()
 plt.show()
