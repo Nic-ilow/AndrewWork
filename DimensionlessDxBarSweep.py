@@ -58,13 +58,6 @@ for dxbar in dxbarArray:
                 if abs(tArray[counter2]-telapsed)<=epsilon:
                         pTot[counter2] = sum((p[0:width])) * dxbar
                         aTot[counter2] = sum(acetyl) * dxbar
-                        #z = xbar/np.sqrt(4*D*(telapsed))
-                        
-                        #pTotAnalytical[int(counter2/10)] = p0*np.sqrt(4*D*(telapsed)/np.pi)
-                        #pTotAnalytical[int(counter2/10)-1] = scii.quad(densityAnalytical,0,x[width-1],args=(telapsed),epsabs=1e-15)[0]
-                        #pTotAnalytical[int(counter2/10)-1] = sum(scis.erfc(z))
-                        #acetylationfit = 1 - np.exp( -p0 * arate * telapsed *( (1+2*(z**2)) * scis.erfc(z) - 2*z*np.exp(-(z**2))/np.sqrt(np.pi) ) )
-                        #aTotAnalytical[int(counter2/10)] = scii.quad(acetylAnalytical,0,xbar[width-1],args=(telapsed),epsabs=1e-15)[0] 
                         if counter2<np.size(tArray)-1:
                                 counter2+=1
 
