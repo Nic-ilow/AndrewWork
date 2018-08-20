@@ -23,7 +23,7 @@ tbarmax = float(args.tbarmax)
 epsilon = dtbar/2
 
 ### pTot and aTot plotting array
-dxbarArray = np.logspace(1,-1,3,base=2)
+dxbarArray = np.logspace(-10,2,13,base=1.1)
 p2 = np.logspace(-1,2,4,base=2) 
 ### Initializing counters and a timer 
 tstart = time.time()
@@ -31,17 +31,21 @@ counter=0
 ### Array Pre-allocation
 for dxbar in dxbarArray:
         counter+=1
+        counter3 = 0
+        
+        dtbar = min(0.5/p0hat , 0.10*dxbar**2)
+        print('p0hat = ',p0hat)
+        print('dtbar = ',dtbar)
+        print('dxbar = ',dxbar)
+        epsilon = dtbar/2
+        tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
+        xbar = np.arange(0,xbarmax,dxbar)
+        tbar = np.arange(0,tbarmax,dtbar)
+        width = np.size(xbar)       
+
+        pTotTemp = np.zeros( (np.size(tArray) , np.size(p2)) )
         for p0hat in p2:
-                dtbar = min(0.5/p0hat , 0.10*dxbar**2)
-                print('p0hat = ',p0hat)
-                print('dtbar = ',dtbar)
-                print('dxbar = ',dxbar)
-                epsilon = dtbar/2
-                tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
-                xbar = np.arange(0,xbarmax,dxbar)
-                tbar = np.arange(0,tbarmax,dtbar)
-                width = np.size(xbar)       
-            
+           
                 p = np.zeros(width+1)
                 p_1 = np.zeros_like(p)
                 telapsed = 0
@@ -74,15 +78,25 @@ for dxbar in dxbarArray:
                         p[0] = p0hat # resetting the boundary condition
                         p[width]=p[width-1] # Closed Tube Boundary
  
+                pTotTemp[:,counter3] = pTot
+
+                if counter3==3:
+                        idx = np.argwhere(np.diff(np.sign(pTotTemp[:,3] - pTotTemp[:,0]))).flatten()
+                        plt.figure(10)
+                        plt.scatter(dxbar,tArray[idx])
+                        idx2 = np.argwhere(np.diff(np.sign(pTotTemp[:,3] - pTotTemp[:,1]))).flatten()
+                        plt.figure(11)
+                        plt.scatter(dxbar,tArray[idx2])
+                '''                        
                 plt.figure(counter)
                 plt.scatter(xbar,p[0:width]/p0hat,s=2,label=('dxbar = %.2e p0hat = %.2e'%(dxbar,p0hat)))
                 
                 plt.figure(np.size(dxbarArray)+counter)
                 plt.loglog(tArray , pTot,label=('dxbar = %.2e p0hat = %.2e'%(dxbar,p0hat)))
-              
+                '''              
                 print((time.time()-tstart)/60)
-
-
+                counter3 += 1
+'''
 for i in range(np.size(dxbarArray)):
         plt.figure(i+1)
         plt.xlabel('Dimensionless length')
@@ -95,3 +109,4 @@ for i in range(np.size(dxbarArray)):
         plt.legend()
 
 plt.show()
+'''
