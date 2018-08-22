@@ -23,7 +23,7 @@ tbarmax = float(args.tbarmax)
 epsilon = dtbar/2
 
 ### pTot and aTot plotting array
-dxbarArray = np.logspace(-10,2,13,base=1.1)
+dxbarArray = np.logspace(-20,10,31,base=1.1)
 p2 = np.logspace(-1,2,4,base=2) 
 ### Initializing counters and a timer 
 tstart = time.time()
