@@ -10,7 +10,7 @@ import time
 parser = argparse.ArgumentParser(description='Command line inputs:')
 parser.add_argument('-p0hat','--p0hat',default=1e-4)
 parser.add_argument('-dxbar','--dxbar',default=6.0)
-parser.add_argument('-xbarmax','--xbarmax',default=1800.0)
+parser.add_argument('-xbarmax','--xbarmax',default=1250.0)
 parser.add_argument('-dtbar','--dtbar',default=.1)
 parser.add_argument('-tbarmax','--tbarmax',default=1.0e5)
 args = parser.parse_args()
@@ -28,8 +28,9 @@ epsilon = dtbar/2
 width = np.size(xbar)       
 
 ### pTot and aTot plotting array
-tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))
-p2 = np.logspace(-4,3,8,base=2)
+dtbar = min(0.5/p0hat , 0.10*dxbar**2)
+tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
+p2 = np.logspace(-2,2,5,base=2)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -42,7 +43,7 @@ for p0hat in p2:
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
         telapsed = 0
-
+        print('p0hat =',p0hat, '\n dtbar = ',dtbar, '\n dxbar = ',dxbar) 
         acetyl = np.zeros(width)
         pTot = np.zeros(np.size(tArray))
         aTot = np.zeros_like(pTot)
