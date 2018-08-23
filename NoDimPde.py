@@ -24,13 +24,12 @@ tbarmax = float(args.tbarmax)
 xbar = np.arange(0,xbarmax,dxbar)
 tbar = np.arange(0,tbarmax,dtbar)
 
-epsilon = dtbar/2
 width = np.size(xbar)       
 
 ### pTot and aTot plotting array
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
-tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
-p2 = np.logspace(-2,2,5,base=2)
+tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))
+p2 = np.logspace(3,4,2,base=2)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -40,6 +39,8 @@ tstart = time.time()
 counter=0
 ### Array Pre-allocation
 for p0hat in p2:
+        dtbar = min(0.5/p0hat , 0.10*dxbar**2)
+        epsilon = dtbar/2
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
         telapsed = 0
@@ -62,7 +63,7 @@ for p0hat in p2:
                                 counter2+=1
 
                 pscaler = 1+p+p**2     
-                p_1[1:width] = p[1:width] +   dtbar *  ( (p[0:width-1]/pscaler[0:width-1] + p[2:width+1]/pscaler[2:width+1] - 2*p[1:width]/pscaler[1:width]) / (dxbar**2))  
+                p_1[1:width] = p[1:width] +   dtbar *  ( ( (p[0:width-1] - p[1:width]) / (pscaler[0:width-1]+pscaler[1:width])/2 + (p[2:width+1] - p[1:width]) / (pscaler[2:width+1]+pscaler[1:width])/2 ) / (dxbar**2))  
                 acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width] ### NO SFD
                  
                 telapsed += dtbar                     
@@ -82,22 +83,22 @@ plt.figure(4)
 ax4 = plt.gca()
 for i , value in enumerate(p2): 
         plt.figure(1)
-        plt.plot(xbar,pArray[i,0:width]/value,label=('p0hat = %.2e'%value))
+        plt.scatter(xbar,pArray[i,0:width]/value,s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless length')
         plt.ylabel('phat/phat0')
 
         plt.figure(2)
-        plt.plot(xbar,aArray[i,:],label=('p0hat = %.2e'%value))
+        plt.scatter(xbar,aArray[i,:],s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless length')
         plt.ylabel('ahat')
         
         plt.figure(3)
-        plt.plot(tArray , pTotArray[i,:],label=('p0hat = %.2e'%value))
+        plt.scatter(tArray , pTotArray[i,:],s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
        
         plt.figure(4)
-        plt.plot(tArray , aTotArray[i,:],label=('p0hat = %.2e'%value))
+        plt.scatter(tArray , aTotArray[i,:],s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('A(t)')
        

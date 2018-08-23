@@ -23,7 +23,7 @@ tbarmax = float(args.tbarmax)
 epsilon = dtbar/2
 
 ### pTot and aTot plotting array
-dxbarArray = np.logspace(-20,10,31,base=1.1)
+dxbarArray = np.logspace(-2,2,5,base=2)
 p2 = np.logspace(-1,2,4,base=2) 
 ### Initializing counters and a timer 
 tstart = time.time()
@@ -67,7 +67,9 @@ for dxbar in dxbarArray:
                                         counter2+=1
 
                         pscaler = 1+p+p**2     
-                        p_1[1:width] = p[1:width] +   dtbar *  ( (p[0:width-1]/pscaler[0:width-1] + p[2:width+1]/pscaler[2:width+1] - 2*p[1:width]/pscaler[1:width]) / (dxbar**2))  
+#                        p_1[1:width] = p[1:width] +   dtbar *  ( (p[0:width-1]/pscaler[0:width-1] + p[2:width+1]/pscaler[2:width+1] - 2*p[1:width]/pscaler[1:width]) / (dxbar**2))  
+### NEW METHOD BELOW
+                        p_1[1:width] = p[1:width] +   dtbar *  ( ( (p[0:width-1] - p[1:width]) / (pscaler[0:width-1]+pscaler[1:width])/2 + (p[2:width+1] - p[1:width]) / (pscaler[2:width+1]+pscaler[1:width])/2 ) / (dxbar**2)) 
                         acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width] ### NO SFD
                          
                         telapsed += dtbar                     
@@ -79,7 +81,7 @@ for dxbar in dxbarArray:
                         p[width]=p[width-1] # Closed Tube Boundary
  
                 pTotTemp[:,counter3] = pTot
-
+                '''
                 if counter3==3:
                         idx = np.argwhere(np.diff(np.sign(pTotTemp[:,3] - pTotTemp[:,0]))).flatten()
                         plt.figure(10)
@@ -93,10 +95,10 @@ for dxbar in dxbarArray:
                 
                 plt.figure(np.size(dxbarArray)+counter)
                 plt.loglog(tArray , pTot,label=('dxbar = %.2e p0hat = %.2e'%(dxbar,p0hat)))
-                '''              
+                              
                 print((time.time()-tstart)/60)
                 counter3 += 1
-'''
+
 for i in range(np.size(dxbarArray)):
         plt.figure(i+1)
         plt.xlabel('Dimensionless length')
@@ -109,4 +111,4 @@ for i in range(np.size(dxbarArray)):
         plt.legend()
 
 plt.show()
-'''
+
