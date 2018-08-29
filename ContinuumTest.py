@@ -12,7 +12,7 @@ parser.add_argument('-p0hat','--p0hat',default=1e-4)
 parser.add_argument('-dxbar','--dxbar',default=6.0)
 parser.add_argument('-xbarmax','--xbarmax',default=1250.0)
 parser.add_argument('-dtbar','--dtbar',default=.1)
-parser.add_argument('-tbarmax','--tbarmax',default=1.0e5)
+parser.add_argument('-tbarmax','--tbarmax',default=1.0e4)
 args = parser.parse_args()
 
 p0hat = float(args.p0hat)
@@ -25,7 +25,7 @@ tbarmax = float(args.tbarmax)
 tstart = time.time()
 counter=0
 ### Array Pre-allocation
-dxbarArray = np.logspace(-2,-4,3,base=2)
+dxbarArray = np.logspace(1,-3,5,base=2)
 for dxbar in dxbarArray:
         dtbar = min(0.5/p0hat , 0.10*dxbar**2)
         epsilon = dtbar/2

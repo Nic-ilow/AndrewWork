@@ -12,7 +12,7 @@ parser.add_argument('-p0hat','--p0hat',default=1e-4)
 parser.add_argument('-dxbar','--dxbar',default=6.0)
 parser.add_argument('-xbarmax','--xbarmax',default=1800.0)
 parser.add_argument('-dtbar','--dtbar',default=.1)
-parser.add_argument('-tbarmax','--tbarmax',default=1.0e5)
+parser.add_argument('-tbarmax','--tbarmax',default=1.0e4)
 args = parser.parse_args()
 
 p0hat = float(args.p0hat)
