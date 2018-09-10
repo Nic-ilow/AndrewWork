@@ -31,7 +31,7 @@ width = np.size(xbar)
 ### pTot and aTot plotting array
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
-p2 = np.logspace(-3,4,8,base=2)
+p2 = np.logspace(-3,4,8,base=4)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
