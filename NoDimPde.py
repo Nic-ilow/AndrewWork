@@ -31,7 +31,7 @@ width = np.size(xbar)
 ### pTot and aTot plotting array
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
-p2 = np.logspace(-3,4,8,base=4)
+p2 = np.logspace(-2,2,5,base=4)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -99,6 +99,8 @@ plt.figure(4)
 ax4 = plt.gca()
 plt.figure(5)
 ax5 = plt.gca()
+linearCutoff = np.argmax(tArray>1e2)
+pTotPoly = np.zeros([2,len(pTotArray)])
 for i , value in enumerate(p2): 
         plt.figure(1)
         plt.plot(xbar,pArray[i,0:width]/value,label=('p0hat = %.2e'%value))
@@ -114,7 +116,9 @@ for i , value in enumerate(p2):
         plt.scatter(tArray , pTotArray[i,:],s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
-       
+        pTotPoly[:,i] = np.polyfit(tArray[linearCutoff:],pTotArray[i,linearCutoff:],1)
+        plt.plot(tArray[linearCutoff:],tArray[linearCutoff:]*pTotPoly[1,i]+pTotPoly[0,i],label=('Slope = %.2f'%pTotPoly[1,i])) 
+        
         plt.figure(4)
         plt.scatter(tArray , aTotArray[i,:],s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
@@ -124,7 +128,6 @@ for i , value in enumerate(p2):
         plt.scatter(tArray , pTotArray[i,:]/value,s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)/p0hat')
-
 plt.figure(1)
 plt.plot(xbar,pReg[0:width],label=('No Single File Effects'))
 plt.legend()
