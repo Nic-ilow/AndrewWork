@@ -31,7 +31,7 @@ width = np.size(xbar)
 ### pTot and aTot plotting array
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
-p2 = np.logspace(-2,2,5,base=4)
+p2 = np.logspace(3,7,5,base=2)
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -47,6 +47,10 @@ pTotReg = np.zeros(np.size(tArray))
 aTotReg = np.zeros_like(pTotReg)
 for p0hat in p2:
         dtbar = min(0.5/p0hat , 0.10*dxbar**2)
+        if dtbar==0.5/p0hat:
+                print('p0Hat Limit')
+        else:
+                print('dxbar Limit')
         epsilon = dtbar/2
         p = np.zeros(width+1)
         p_1 = np.zeros_like(p)
@@ -62,10 +66,10 @@ for p0hat in p2:
         counter2 = 0
  
         while telapsed<=tbarmax: # Iterating the system of tmax amount of seconds
-                if p0hat==1:
-                        pReg[0] = p0hat
+                if counter==0:
+                        pReg[0] = 1.0
                         pReg1[1:width] = pReg[1:width] + dtbar/(dxbar**2)*(pReg[0:width-1]-2*pReg[1:width]+pReg[2:width+1])
-                        aReg = aReg[0:width] + (1-aReg[0:width] )*dtbar*pReg[0:width]/p0hat
+                        aReg = aReg[0:width] + (1-aReg[0:width] )*dtbar*pReg[0:width]
                         pReg,pReg1 = pReg1,pReg
                         pReg[0] = p0hat
                         pReg[width] = pReg[width-1]
@@ -73,8 +77,8 @@ for p0hat in p2:
                         pTot[counter2] = sum((p[0:width])) * dxbar
                         aTot[counter2] = sum(acetyl) * dxbar
                         if p0hat==1:
-                                pTotReg[counter2] = sum((pReg[0:width]))*dxbar
-                                aTotReg[counter2] = sum((aReg[0:width]))*dxbar
+                                pTotReg[counter2] = sum((pReg[1:width]))*dxbar
+                                aTotReg[counter2] = sum((aReg[1:width]))*dxbar
                         if counter2<np.size(tArray)-1:
                                 counter2+=1
 
@@ -93,6 +97,7 @@ for p0hat in p2:
         aTotArray[counter,:] = aTot
         counter+=1
         print((time.time()-tstart)/60)
+
 plt.figure(3)
 ax3 = plt.gca()
 plt.figure(4)
@@ -101,6 +106,10 @@ plt.figure(5)
 ax5 = plt.gca()
 linearCutoff = np.argmax(tArray>1e2)
 pTotPoly = np.zeros([2,len(pTotArray)])
+aTotPoly = np.zeros_like(pTotPoly)
+colorList = ['b','g','r','c','m','k','y']
+
+counter = 0
 for i , value in enumerate(p2): 
         plt.figure(1)
         plt.plot(xbar,pArray[i,0:width]/value,label=('p0hat = %.2e'%value))
@@ -113,21 +122,25 @@ for i , value in enumerate(p2):
         plt.ylabel('ahat')
         
         plt.figure(3)
-        plt.scatter(tArray , pTotArray[i,:],s=2,label=('p0hat = %.2e'%value))
+        plt.scatter(np.log(tArray) , np.log(pTotArray[i,:]),s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
-        pTotPoly[:,i] = np.polyfit(tArray[linearCutoff:],pTotArray[i,linearCutoff:],1)
-        plt.plot(tArray[linearCutoff:],tArray[linearCutoff:]*pTotPoly[1,i]+pTotPoly[0,i],label=('Slope = %.2f'%pTotPoly[1,i])) 
+        pTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(pTotArray[i,linearCutoff:]),1)
+        plt.plot(np.log(tArray[linearCutoff:]),np.log(tArray[linearCutoff:])*pTotPoly[0,i]+pTotPoly[1,i],label=('Slope = %.2f'%pTotPoly[0,i])) 
         
         plt.figure(4)
-        plt.scatter(tArray , aTotArray[i,:],s=2,label=('p0hat = %.2e'%value))
+        plt.scatter(np.log(tArray) , np.log(aTotArray[i,:]),s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('A(t)')
+        aTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(aTotArray[i,linearCutoff:]),1)
+        plt.plot(np.log(tArray[linearCutoff:]),np.log(tArray[linearCutoff:])*aTotPoly[0,i]+aTotPoly[1,i],label=('Slope = %.2f'%aTotPoly[0,i])) 
         
         plt.figure(5) 
         plt.scatter(tArray , pTotArray[i,:]/value,s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)/p0hat')
+        
+        counter+=1
 plt.figure(1)
 plt.plot(xbar,pReg[0:width],label=('No Single File Effects'))
 plt.legend()
@@ -137,13 +150,13 @@ plt.plot(xbar,aReg,label=('No Single File Effects'))
 plt.legend()
 plt.figure(3)
 #plt.scatter(tArray , pTotReg,s=2,label=('No Single File Effects'))
-ax3.set_xscale('log')
-ax3.set_yscale('log')
+#ax3.set_xscale('log')
+#ax3.set_yscale('log')
 plt.legend()
 plt.figure(4)
 #plt.scatter(tArray, aTotReg,s=2,label=('No Single File Effects'))
-ax4.set_xscale('log')
-ax4.set_yscale('log')
+#ax4.set_xscale('log')
+#ax4.set_yscale('log')
 plt.legend()
 plt.figure(5)
 ax5.set_xscale('log')
