@@ -22,6 +22,8 @@ dxbar = float(args.dxbar)
 xbarmax = float(args.xbarmax)
 dtbar = float(args.dtbar)
 tbarmax = float(args.tbarmax)
+colorList = ['b','g','r','c','m','k','y']
+
 
 xbar = np.arange(0,xbarmax,dxbar)
 tbar = np.arange(0,tbarmax,dtbar)
@@ -32,6 +34,7 @@ width = np.size(xbar)
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
 tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
 p2 = np.logspace(-2,3,6,base=4)
+#p2 = np.array([.0625,64])
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
 pTotArray = np.zeros( ( np.size(p2) , np.size(tArray) ) )
@@ -45,6 +48,7 @@ pReg1 = np.zeros_like(pReg)
 aReg = np.zeros(width)
 pTotReg = np.zeros(np.size(tArray))
 aTotReg = np.zeros_like(pTotReg)
+plottingTimes = np.array([2.0,20.0,200.0])*dtbar
 for p0hat in p2:
         dtbar = min(0.5/p0hat , 0.10*dxbar**2)
         if dtbar==0.5/p0hat:
@@ -76,7 +80,7 @@ for p0hat in p2:
                 if abs(tArray[counter2]-telapsed)<=epsilon:
                         pTot[counter2] = sum((p[1:width])) * dxbar
                         aTot[counter2] = sum(acetyl[1:width]) * dxbar
-                        if p0hat==1:
+                        if counter==0:
                                 pTotReg[counter2] = sum((pReg[1:width]))*dxbar
                                 aTotReg[counter2] = sum((aReg[1:width]))*dxbar
                         if counter2<np.size(tArray)-1:
@@ -84,13 +88,20 @@ for p0hat in p2:
 
                 pscaler = 1+p+p**2     
                 p_1[1:width] = p[1:width] +   dtbar *  ( ( (p[0:width-1] - p[1:width]) / ((pscaler[0:width-1]+pscaler[1:width])/2) + (p[2:width+1] - p[1:width]) / ((pscaler[2:width+1]+pscaler[1:width])/2 )) / (dxbar**2))  
-                acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width]/p0hat ### NO SFD
+                acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width] ### NO SFD
                  
                 telapsed += dtbar                     
 
                 p,p_1 = p_1,p # Updating concentration array
                 p[0] = p0hat # resetting the boundary condition
                 p[width]=p[width-1] # Closed Tube Boundary
+                if p0hat in [p2[0] , p2[np.size(p2)-1]]: 
+                        if any(abs(telapsed-plottingTimes)<=epsilon):
+                                plt.figure(8)
+                                plt.plot(xbar[1:100],p[1:100],c=colorList[counter],label=('p0hat %.2e at t=%.2e'%(p0hat,telapsed)))
+                                plt.figure(9)
+                                plt.plot(xbar[1:100],acetyl[1:100],c=colorList[counter],label=('p0hat %.2e at t=%.2e'%(p0hat,telapsed)))
+
         pArray[counter,:] = p[0:width]
         aArray[counter,:] = acetyl[0:width]
         pTotArray[counter,:] = pTot
@@ -107,8 +118,6 @@ ax5 = plt.gca()
 linearCutoff = np.argmax(tArray>1e2)
 pTotPoly = np.zeros([2,len(pTotArray)])
 aTotPoly = np.zeros_like(pTotPoly)
-colorList = ['b','g','r','c','m','k','y']
-
 counter = 0
 for i , value in enumerate(p2): 
         plt.figure(1)
@@ -122,14 +131,14 @@ for i , value in enumerate(p2):
         plt.ylabel('ahat')
         
         plt.figure(3)
-        plt.scatter(np.log(tArray) , np.log(pTotArray[i,:]),s=2,label=('p0hat = %.2e'%value))
+        plt.scatter(np.log(tArray) , np.log(pTotArray[i,:]),s=4,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
         pTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(pTotArray[i,linearCutoff:]),1)
         #plt.plot(np.log(tArray[linearCutoff:]),np.log(tArray[linearCutoff:])*pTotPoly[0,i]+pTotPoly[1,i],label=('Slope = %.2f'%pTotPoly[0,i])) 
         
         plt.figure(4)
-        plt.scatter(np.log(tArray) , np.log(aTotArray[i,:]),s=2,label=('p0hat = %.2e'%value))
+        plt.scatter(np.log(tArray) , np.log(aTotArray[i,:]),s=4,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('A(t)')
         aTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(aTotArray[i,linearCutoff:]),1)
@@ -139,8 +148,14 @@ for i , value in enumerate(p2):
         plt.scatter(np.log(tArray) , np.log(pTotArray[i,:]/value),s=2,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)/p0hat')
-        
+
+        plt.figure(6)
+        plt.plot(xbar[1:width],pArray[i,1:width],label=('p0hat = %.2e'%value))
+        plt.xlabel('Dimensionless Length')
+        plt.ylabel('phat')
+
         counter+=1
+
 plt.figure(1)
 plt.plot(xbar,pReg[0:width],label=('No Single File Effects'))
 plt.legend()
@@ -161,7 +176,23 @@ plt.legend()
 plt.figure(5)
 #ax5.set_xscale('log')
 #ax5.set_yscale('log')
-#plt.scatter(tArray,pTotReg,s=2,label=('No Single File Effects p0hat=1'))
+plt.scatter(np.log(tArray),np.log(pTotReg),s=2,label=('No Single File Effects p0hat=1'))
+
+plt.legend()
+
+plt.figure(6)
+plt.legend()
+
+plt.figure(8)
+plt.xlabel('Dimensionless Length')
+plt.ylabel('Unscaled Density (p)')
+plt.title('Density at different times and p0 values')
+plt.legend()
+
+plt.figure(9)
+plt.xlabel('Dimensionless Length')
+plt.ylabel('ahat')
+plt.title('Acetylation at different times and p0 values')
 plt.legend()
 
 plt.show()
