@@ -54,12 +54,17 @@ Density = np.zeros(np.size(x))
 asite = np.zeros(width,int) # 1 if acetylated, 0 if not
 Acetylation = np.zeros(np.size(asite))
 
+totPoints = []
+plotPoints = []
+NTot = []
+ATot = []
 pArray = []
 aArray = []
 
 Nbound = 0
 Nfree = 0
 Nacetyl = 0	# number of particles
+
 free = []
 bound = []
 
@@ -129,25 +134,29 @@ def fill():
                 Nfree += 1
                 leftIn +=1
 
-
-
 tElapsed = 0
-plotCuts = np.array( [tmax/4 , tmax/2 , 3*tmax/4 , tmax] )
-plotPoints = []
+
+plotCuts = [tmax/4 , tmax/2 , 3*tmax/4 , tmax] 
+netCuts = list(np.logspace(-100,0,base=1.1)*tmax)
+
 tStart = time.time()
+counter = 0
+
 while tElapsed < tmax:
-        
-        fill()
-        tTemp = tElapsed
-        totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate
+        if counter<10:
+                print(x)
+        fill() # Replacing the boundary 
+
+        tTemp = tElapsed # For checking if time progressed this iteration
+
+        totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate #Kinetic Monte Carlo
         dt = -1.0/totrate*m.log(1.0-ran.random())
         
-        eps = dt/2
-
         nextx = ran.random()*totrate
 
         if nextx < Nfree*kon:
                 binder('bind')
+
         elif nextx < Nfree*(kon+khop):
                 hop(ran.randrange(Nfree))
         
@@ -160,24 +169,52 @@ while tElapsed < tmax:
         if tTemp!=tElapsed:
                 Density += x*dt
                 Acetylation += asite*dt
-
-        
-        if any(abs(tElapsed-plotCuts)<=eps):
-                aArray.append(Acetylation)
-                pArray.append(Density)
+                counter += 1
+         
+        if any((tElapsed-t)>0 for t in plotCuts):
+                temp1 = np.copy(Density)
+                temp2 = np.copy(Acetylation)
+                pArray.append(temp1)
+                aArray.append(temp2)
                 plotPoints.append(plotCuts.pop(0))
                 print('saved at time = %.2f'%tElapsed)
+
+        if any((tElapsed-t)>0 for t in netCuts):
+               NTot.append(sum(x))
+               ATot.append(sum(asite))
+               totPoints.append(netCuts.pop(0))
+
 tEnd = time.time()
 tRun = (tEnd-tStart)/60
 
 print('Time Spent Running = %.2f'%tRun)
 plotPoints = np.array(plotPoints)
-for i , value in enumerate(plotCuts):
+for i , value in enumerate(plotPoints):
         plt.figure(1)
         plt.plot(mtScaled,pArray[i]/plotPoints[i],label=('t = %.2f s'%value))
         
         plt.figure(2)
         plt.plot(mtScaled,aArray[i]/am/plotPoints[i],label=('t = %.2f s'%value))
+
+plt.figure(3)
+ax = plt.gca()
+ax.set_xscale('log')
+ax.set_yscale('log')
+plt.scatter(totPoints,NTot)
+ax.set_xlim([min(totPoints)/2,tmax*2])
+ax.set_ylim([.5,max(NTot)*2])
+plt.xlabel('Time (s)')
+plt.ylabel('Ntot')
+
+plt.figure(4)
+ax = plt.gca()
+ax.set_xscale('log')
+ax.set_yscale('log')
+plt.scatter(totPoints,ATot)
+ax.set_xlim([min(totPoints)/2,tmax*2])
+ax.set_ylim([.5,max(ATot)*2])
+plt.xlabel('Time (s)')
+plt.ylabel('Atot')
 
 plt.figure(1)
 plt.xlabel('Scaled Length')
