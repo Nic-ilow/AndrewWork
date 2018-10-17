@@ -48,28 +48,6 @@ print("tmax:",tmax," nrun:",nrun," name:",name," seed:",seed," width:",width," a
 mt = np.arange(0,width)
 mtScaled = mt/(width-1.0)
 global x,leftIn,rightOut,Nbound,Nfree,free,bound,x,asite,tElapsed
-x = np.zeros(width,int)  # 0 if empty, 1 if particle
-Density = np.zeros(np.size(x))
-
-asite = np.zeros(width,int) # 1 if acetylated, 0 if not
-Acetylation = np.zeros(np.size(asite))
-
-totPoints = []
-plotPoints = []
-NTot = []
-ATot = []
-pArray = []
-aArray = []
-
-Nbound = 0
-Nfree = 0
-Nacetyl = 0	# number of particles
-
-free = []
-bound = []
-
-rightOut = 0
-leftIn = 0
 
 ###################################################
 def hop(this):
@@ -96,18 +74,19 @@ def hop(this):
 def acetylate():
         global Nfree,tElapsed,asite,Nacetyl,Nbound
         temp = ran.randrange(Nfree+Nbound)
+        temp2 = ran.random()
         if temp<Nfree:
                 pos = free[temp]
-                if asite[pos]<am:
+                if temp2<=(1-asite[pos]/am):
                         asite[pos]+=1
-                        tElapsed += dt 
                         Nacetyl += 1
         else:
                 pos = bound[temp-Nfree]
-                if asite[pos]<am:
+                if temp2<=(1-asite[pos]/am):
                         asite[pos]+=1
-                        tElapsed += dt
                         Nacetyl += 1
+
+        tElapsed += dt
 ###############################################
 def binder(discriminator):
         global free,bound,Nbound,Nfree,tElapsed
@@ -134,59 +113,82 @@ def fill():
                 Nfree += 1
                 leftIn +=1
 
-tElapsed = 0
-
-plotCuts = [tmax/4 , tmax/2 , 3*tmax/4 , tmax] 
-netCuts = list(np.logspace(-100,0,base=1.1)*tmax)
+##############################################
 
 tStart = time.time()
 counter = 0
 
-while tElapsed < tmax:
-        if counter<10:
-                print(x)
-        fill() # Replacing the boundary 
+while counter<tubuleSims:
 
-        tTemp = tElapsed # For checking if time progressed this iteration
+        x = np.zeros(width,int)  # 0 if empty, 1 if particle
+        Density = np.zeros(np.size(x))
 
-        totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate #Kinetic Monte Carlo
-        dt = -1.0/totrate*m.log(1.0-ran.random())
-        
-        nextx = ran.random()*totrate
+        asite = np.zeros(width,int) # 1 if acetylated, 0 if not
+        Acetylation = np.zeros(np.size(asite))
 
-        if nextx < Nfree*kon:
-                binder('bind')
+        totPoints = []
+        plotPoints = []
+        NTot = []
+        ATot = []
+        pArray = []
+        aArray = []
 
-        elif nextx < Nfree*(kon+khop):
-                hop(ran.randrange(Nfree))
-        
-        elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate:
-                acetylate()
-        
-        else:
-                binder('unbind')
-        
-        if tTemp!=tElapsed:
+        Nbound = 0
+        Nfree = 0
+        Nacetyl = 0	# number of particles
+
+        free = []
+        bound = []
+
+        rightOut = 0
+        leftIn = 0
+
+        tElapsed = 0
+
+        plotCuts = [tmax/4 , tmax/2 , 3*tmax/4 , tmax]
+        netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
+
+        while tElapsed < tmax:
+                fill() # Replacing the boundary
+
+                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate #Kinetic Monte Carlo
+                dt = -1.0/totrate*m.log(1.0-ran.random())
+
+                nextx = ran.random()*totrate
+
+                if nextx < Nfree*kon:
+                        binder('bind')
+
+                elif nextx < Nfree*(kon+khop):
+                        hop(ran.randrange(Nfree))
+
+                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate:
+                        acetylate()
+
+                else:
+                        binder('unbind')
+
                 Density += x*dt
                 Acetylation += asite*dt
-                counter += 1
-         
-        if any((tElapsed-t)>0 for t in plotCuts):
-                temp1 = np.copy(Density)
-                temp2 = np.copy(Acetylation)
-                pArray.append(temp1)
-                aArray.append(temp2)
-                plotPoints.append(plotCuts.pop(0))
-                print('saved at time = %.2f'%tElapsed)
 
-        if any((tElapsed-t)>0 for t in netCuts):
-               NTot.append(sum(x))
-               ATot.append(sum(asite))
-               totPoints.append(netCuts.pop(0))
+                if any((tElapsed-t)>0 for t in plotCuts):
+                        temp1 = np.copy(Density)
+                        temp2 = np.copy(Acetylation)
+                        pArray.append(temp1)
+                        aArray.append(temp2)
+                        plotPoints.append(plotCuts.pop(0))
+                        print('saved at time = %.2f'%tElapsed)
 
-tEnd = time.time()
-tRun = (tEnd-tStart)/60
+                while any((tElapsed-t)>0 for t in netCuts):
+                       NTot.append(sum(np.copy(x)))
+                       ATot.append(sum(np.copy(asite)))
+                       totPoints.append(netCuts.pop(0))
+        counter+=1
+        tEnd = time.time()
+        tRun = (tEnd-tStart)/60
 
+
+'''
 print('Time Spent Running = %.2f'%tRun)
 plotPoints = np.array(plotPoints)
 for i , value in enumerate(plotPoints):
@@ -227,3 +229,4 @@ plt.ylabel('Acetylation')
 plt.legend()
 
 plt.show()
+'''
