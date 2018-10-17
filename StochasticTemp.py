@@ -150,7 +150,7 @@ while counter<tubuleSims:
 
         plotCuts = [tmax/4 , tmax/2 , 3*tmax/4 , tmax]
         netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
-
+        counter2 = 0
         while tElapsed <= tmax:
                 fill() # Replacing the boundary
 
@@ -172,11 +172,11 @@ while counter<tubuleSims:
                         binder('unbind')
 
                 Density += x*dt
-                Acetylation += asite*dt
+                #Acetylation += asite*dt
 
                 if any((tElapsed-t)>0 for t in plotCuts):
                         temp1 = np.copy(Density)
-                        temp2 = np.copy(Acetylation)
+                        temp2 = np.copy(asite)
                         pArray.append(temp1)
                         aArray.append(temp2)
                         plotPoints.append(plotCuts.pop(0))
@@ -185,11 +185,11 @@ while counter<tubuleSims:
                        NTot.append(sum(np.copy(x)))
                        ATot.append(sum(np.copy(asite)))
                        totPoints.append(netCuts.pop(0))
-
+                counter2 += 1
         tEnd = time.time()
         tRun = (tEnd-tStart)/60
         print('Time Spent Running = %.2f'%tRun)
-
+        print('Average Timestep = %2f'%(tmax/counter2))
         flux = [leftIn,rightOut]
 
         tubuleDens = 'DENS_{0}'.format(counter)

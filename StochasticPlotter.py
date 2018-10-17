@@ -41,24 +41,35 @@ density = np.zeros_like(np.load('DENS_0.npy'))
 acetylation = np.zeros_like(density)
 NTot = np.zeros(np.size(TotTimes))
 ATot = np.zeros_like(NTot)
+
+densityArray = []
+acetylationArray = []
+NTotArray = []
+ATotArray = []
+
 flux = np.zeros(2)
 
 for directory in directories:
-        
-        if ('DENS') in directory:
-                density += np.load(directory)
+        if '.npy' in directory:
+                temp = np.load(directory)
+
+        if 'DENS' in directory:
+                density += temp
+                densityArray.append(temp)
 
         elif 'ACETYL' in directory:
-                acetylation += np.load(directory)
+                acetylation += temp
+                acetylationArray.append(temp)
 
         elif 'NTOT' in directory: 
-                NTot += np.load(directory)
+                NTot += temp
+                NTotArray.append(temp)
 
         elif 'ATOT' in directory:
-                ATot += np.load(directory)
-        
+                ATot += temp
+                ATotArray.append(temp)
         elif 'FLUX' in directory:
-                flux += np.load(directory)
+                flux += temp
 
 density /= tubuleSims
 acetylation /= tubuleSims
@@ -74,7 +85,7 @@ for i, value in enumerate(SliceTimes):
         plt.plot(mt,density[i]/SliceTimes[i],label=('T = %d s'%(value)))
 
         plt.figure(2)
-        plt.plot(mt,acetylation[i]/SliceTimes[i],label=('T =%d s'%(value)))
+        plt.plot(mt,acetylation[i]/SliceTimes[i]/am,label=('T =%d s'%(value)))
 
 plt.figure(1)
 plt.xlabel('X')
