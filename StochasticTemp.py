@@ -148,7 +148,7 @@ while counter<tubuleSims:
 
         tElapsed = 0
 
-        plotCuts = [tmax/4 , tmax/2 , 3*tmax/4 , tmax]
+        plotCuts = [ 30 , 60 , 120 , 240]
         netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
         counter2 = 0
         while tElapsed <= tmax:
