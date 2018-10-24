@@ -37,6 +37,7 @@ mt=np.arange(0,width)/width
 TotTimes = np.load('TotTimes.npy')
 SliceTimes = np.load('SliceTimes.npy')
 
+#SliceTimes = SliceTimes[3:] # This line is for that one broken simulation that I did, oct 19 2018
 
 density = np.zeros_like(np.load('DENS_0.npy'))
 acetylation = np.zeros_like(density)
@@ -89,41 +90,44 @@ minATot = ATotArray[0]
 maxATot = ATotArray[0]
 
 for i in range(int(tubuleSims)):
-        for j in range(len(NTot)):
-                minNTot[j] = min(minNTot[j],NTotArray[i][j]) 
-                maxNTot[j] = max(maxNTot[j],NTotArray[i][j])
-                minATot[j] = min(minATot[j],ATotArray[i][j])
-                maxATot[j] = max(maxATot[j],ATotArray[i][j])
+        minNTot = np.minimum(minNTot,NTotArray[i])
+        maxNTot = np.maximum(maxNTot,NTotArray[i])
+        minATot = np.minimum(minATot,ATotArray[i])
+        maxATot = np.maximum(maxATot,ATotArray[i])
 
 for i, value in enumerate(SliceTimes):
         plt.figure(1)
-        plt.plot(mt,density[i]/SliceTimes[i],label=('T = %d s'%(value)))
+        plt.plot(mt,density[i]/value,label=('t = %d s'%(value)))
 
         plt.figure(2)
-        plt.plot(mt,acetylation[i]/am,label=('T =%d s'%(value)))
+        plt.plot(mt,acetylation[i]/am,label=('t =%d s'%(value)))
 
 plt.figure(1)
-plt.xlabel('X')
-plt.ylabel('Average Density')
+plt.xlabel('x/L')
+plt.ylabel('Average Occupation')
 plt.legend()
 
 plt.figure(2)
-plt.xlabel('X')
+plt.xlabel('x/L')
 plt.ylabel('Average Acetylation')
 plt.legend()
 
 plt.figure(3)
-plt.loglog(TotTimes,NTot)
-plt.loglog(TotTimes,minNTot)
-plt.loglog(TotTimes,maxNTot)
-plt.xlabel('T (s)')
-plt.ylabel('Average NTot')
+ax = plt.gca()
+plt.plot(TotTimes,NTot)
+plt.fill_between(TotTimes,minNTot,maxNTot,alpha=.3)
+ax.set_xscale('log')
+ax.set_yscale('log')
+plt.xlabel('t (s)')
+plt.ylabel('Average Total Enzymes in Tubule')
 
 plt.figure(4)
-plt.loglog(TotTimes,ATot)
-plt.loglog(TotTimes,minATot)
-plt.loglog(TotTimes,maxATot)
-plt.xlabel('T (s)')
-plt.ylabel('Average ATot')
+ax = plt.gca()
+plt.plot(TotTimes,ATot)
+plt.fill_between(TotTimes,minATot,maxATot,alpha=.3)
+ax.set_xscale('log')
+ax.set_yscale('log')
+plt.xlabel('t (s)')
+plt.ylabel('Average Total Acetylated Sites')
 
 plt.show()

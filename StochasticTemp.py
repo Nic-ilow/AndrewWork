@@ -185,6 +185,7 @@ while counter<tubuleSims:
                        NTot.append(sum(np.copy(x)))
                        ATot.append(sum(np.copy(asite)))
                        totPoints.append(netCuts.pop(0))
+
                 counter2 += 1
         tEnd = time.time()
         tRun = (tEnd-tStart)/60
