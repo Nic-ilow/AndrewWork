@@ -17,10 +17,10 @@ if os.path.exists(dateFormat):
 os.makedirs(dateFormat)
 
 parser=argparse.ArgumentParser(description='Command line inputs:') # needs to import argparse at top
-parser.add_argument('-R','--R',default=0.01,help='koff/kon ratio')
 parser.add_argument('-D0','--D0',default=2.7E5,help='diffusion as measured')	# Szyk measured diff
 parser.add_argument('-dx','--dx',default=7.0,help='particle diam')		# nm (size of alphatTat1)
 parser.add_argument('-koff','--koff',default=10.0,help='off rate (per second)')
+parser.add_argument('-kon','--kon',default=1000.0,help='on rate (per second)')
 parser.add_argument('-tmax','--tmax',default=32.0,help='maximum time in seconds')
 parser.add_argument('-width','--width',default=16,help='width system in units of dx')
 parser.add_argument('-arate','--arate',default=1,help='probability of particle acetylating site')
@@ -28,20 +28,23 @@ parser.add_argument('-am','--am',default=13,help='acetyl multiplicity, e.g. how 
 parser.add_argument('-tubules','--tubules',default=3,help='Number of simulations to save data for')
 args=parser.parse_args()
 
-R=float(args.R)
 D0=float(args.D0)
 dx=float(args.dx)
 koff=float(args.koff)
+kon=float(args.kon)
 tmax=float(args.tmax)
 width=int(args.width)
 arate=float(args.arate)
 am = int(args.am)
 tubuleSims = int(args.tubules)
 
-fractionfree=R/(1.0+R)  # large R gives fractionfree=1 e.g. how often the particle is NOT bound
-khop=2.0*D0/(dx*dx)/fractionfree 
 
-kon = koff/R  # (per second) 0.0 gives SD (singular limit)  (0.001 gives 10/s)  R=koff/kon
+if kon==0:
+        fractionfree = 1.0
+else:
+        R = koff/kon
+        fractionfree=R/(1.0+R)  # large R gives fractionfree=1 e.g. how often the particle is NOT bound
+khop=2.0*D0/(dx*dx)/fractionfree 
 
 # density 1 at 0
 # density 0 at width (which isn't a site)
@@ -121,7 +124,7 @@ tStart = time.time()
 counter = 0
 
 while counter<tubuleSims:
-
+        print('Tubule_{0}'.format(counter))
         ran.seed(int(time.time()*1000000))
         x = np.zeros(width,int)  # 0 if empty, 1 if particle
         Density = np.zeros(np.size(x))
@@ -148,7 +151,7 @@ while counter<tubuleSims:
 
         tElapsed = 0
 
-        plotCuts = [ 30 , 60 , 120 , 240]
+        plotCuts = [ 2 , 4 , 8 , 16 , 30 ]
         netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
         counter2 = 0
         while tElapsed <= tmax:
@@ -175,7 +178,7 @@ while counter<tubuleSims:
                 #Acetylation += asite*dt
 
                 if any((tElapsed-t)>0 for t in plotCuts):
-                        temp1 = np.copy(Density)
+                        temp1 = np.copy(x)
                         temp2 = np.copy(asite)
                         pArray.append(temp1)
                         aArray.append(temp2)
