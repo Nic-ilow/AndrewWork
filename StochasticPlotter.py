@@ -72,9 +72,8 @@ for directory in directories:
                 ATotArray.append(temp)
         elif 'FLUX' in directory:
                 flux += temp
-
-density /= tubuleSims
-acetylation /= tubuleSims
+density2 = density / tubuleSims
+acetylation2 = acetylation / tubuleSims
 NTot /= tubuleSims
 ATot /= tubuleSims
 flux /= tubuleSims
@@ -97,10 +96,10 @@ for i in range(int(tubuleSims)):
 
 for i, value in enumerate(SliceTimes):
         plt.figure(1)
-        plt.plot(mt,density[i]/value,label=('t = %d s'%(value)))
+        plt.plot(mt,density2[i],label=('t = %d s'%(value)))
 
         plt.figure(2)
-        plt.plot(mt,acetylation[i]/am,label=('t =%d s'%(value)))
+        plt.plot(mt,acetylation2[i]/am,label=('t =%d s'%(value)))
 
 plt.figure(1)
 plt.xlabel('x/L')

@@ -32,8 +32,8 @@ width = np.size(xbar)
 
 ### pTot and aTot plotting array
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
-tArray = np.exp(np.arange(0,np.log(tbarmax),dtbar))-(1/dtbar-2)*dtbar
-p2 = np.logspace(-2,3,6,base=4)
+tArray = np.logspace(-200,0,num=200,base=1.1)*tbarmax
+p2 = np.logspace(2,2,1,base=10)
 #p2 = np.array([.0625,64])
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
@@ -49,6 +49,7 @@ aReg = np.zeros(width)
 pTotReg = np.zeros(np.size(tArray))
 aTotReg = np.zeros_like(pTotReg)
 plottingTimes = np.array([2.0,20.0,200.0])*dtbar
+
 for p0hat in p2:
         dtbar = min(0.5/p0hat , 0.10*dxbar**2)
         if dtbar==0.5/p0hat:
@@ -77,7 +78,7 @@ for p0hat in p2:
                         pReg,pReg1 = pReg1,pReg
                         pReg[0] = 1.0 
                         pReg[width] = pReg[width-1]
-                if abs(tArray[counter2]-telapsed)<=epsilon:
+                while (telapsed - tArray[counter2])>=0:
                         pTot[counter2] = sum((p[1:width])) * dxbar
                         aTot[counter2] = sum(acetyl[1:width]) * dxbar
                         if counter==0:
@@ -109,12 +110,6 @@ for p0hat in p2:
         counter+=1
         print((time.time()-tstart)/60)
 
-plt.figure(3)
-ax3 = plt.gca()
-plt.figure(4)
-ax4 = plt.gca()
-plt.figure(5)
-ax5 = plt.gca()
 linearCutoff = np.argmax(tArray>1e2)
 pTotPoly = np.zeros([2,len(pTotArray)])
 aTotPoly = np.zeros_like(pTotPoly)
@@ -131,21 +126,21 @@ for i , value in enumerate(p2):
         plt.ylabel('ahat')
         
         plt.figure(3)
-        plt.scatter(np.log(tArray) , np.log(pTotArray[i,:]),s=4,label=('p0hat = %.2e'%value))
+        plt.loglog(tArray , pTotArray[i,:],label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)')
-        pTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(pTotArray[i,linearCutoff:]),1)
+        #pTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(pTotArray[i,linearCutoff:]),1)
         #plt.plot(np.log(tArray[linearCutoff:]),np.log(tArray[linearCutoff:])*pTotPoly[0,i]+pTotPoly[1,i],label=('Slope = %.2f'%pTotPoly[0,i])) 
         
         plt.figure(4)
-        plt.scatter(np.log(tArray) , np.log(aTotArray[i,:]),s=4,label=('p0hat = %.2e'%value))
+        plt.loglog(tArray , aTotArray[i,:],label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('A(t)')
-        aTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(aTotArray[i,linearCutoff:]),1)
+        #aTotPoly[:,i] = np.polyfit(np.log(tArray[linearCutoff:]),np.log(aTotArray[i,linearCutoff:]),1)
         #plt.plot(np.log(tArray[linearCutoff:]),np.log(tArray[linearCutoff:])*aTotPoly[0,i]+aTotPoly[1,i],label=('Slope = %.2f'%aTotPoly[0,i])) 
         
         plt.figure(5) 
-        plt.scatter(np.log(tArray) , np.log(pTotArray[i,:]/value),s=2,label=('p0hat = %.2e'%value))
+        plt.loglog(tArray ,pTotArray[i,:]/value,label=('p0hat = %.2e'%value))
         plt.xlabel('Dimensionless Time')
         plt.ylabel('N(t)/p0hat')
 
@@ -176,23 +171,6 @@ plt.legend()
 plt.figure(5)
 #ax5.set_xscale('log')
 #ax5.set_yscale('log')
-plt.scatter(np.log(tArray),np.log(pTotReg),s=2,label=('No Single File Effects p0hat=1'))
-
+#plt.scatter(np.log(tArray),np.log(pTotReg),s=2,label=('No Single File Effects p0hat=1'))
 plt.legend()
-
-plt.figure(6)
-plt.legend()
-
-plt.figure(8)
-plt.xlabel('Dimensionless Length')
-plt.ylabel('Unscaled Density (p)')
-plt.title('Density at different times and p0 values')
-plt.legend()
-
-plt.figure(9)
-plt.xlabel('Dimensionless Length')
-plt.ylabel('ahat')
-plt.title('Acetylation at different times and p0 values')
-plt.legend()
-
 plt.show()
