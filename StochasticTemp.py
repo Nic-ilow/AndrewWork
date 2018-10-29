@@ -23,7 +23,7 @@ parser.add_argument('-koff','--koff',default=10.0,help='off rate (per second)')
 parser.add_argument('-kon','--kon',default=1000.0,help='on rate (per second)')
 parser.add_argument('-tmax','--tmax',default=32.0,help='maximum time in seconds')
 parser.add_argument('-width','--width',default=16,help='width system in units of dx')
-parser.add_argument('-arate','--arate',default=1,help='probability of particle acetylating site')
+parser.add_argument('-arate','--arate',default=1.0,help='probability of particle acetylating site')
 parser.add_argument('-am','--am',default=13,help='acetyl multiplicity, e.g. how many acetyl groups per site')
 parser.add_argument('-tubules','--tubules',default=3,help='Number of simulations to save data for')
 args=parser.parse_args()
@@ -51,6 +51,7 @@ khop=2.0*D0/(dx*dx)/fractionfree
 
 #
 mt = np.arange(0,width)
+mt2 = mt*dx
 mtScaled = mt/(width-1.0)
 global x,leftIn,rightOut,Nbound,Nfree,free,bound,x,asite,tElapsed
 
@@ -76,6 +77,7 @@ def hop(this):
                         free[this] = pos+1
         tElapsed += dt
 ##############################################
+
 def acetylate():
         global Nfree,tElapsed,asite,Nacetyl,Nbound
         temp = ran.randrange(Nfree+Nbound)
@@ -92,6 +94,7 @@ def acetylate():
                         Nacetyl += 1
 
         tElapsed += dt
+
 ###############################################
 def binder(discriminator):
         global free,bound,Nbound,Nfree,tElapsed
@@ -151,7 +154,7 @@ while counter<tubuleSims:
 
         tElapsed = 0
 
-        plotCuts = [ 2 , 4 , 8 , 16 , 30 ]
+        plotCuts = [1, 2 , 4 , 8 , 16 , 30 ]
         netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
         counter2 = 0
         while tElapsed <= tmax:

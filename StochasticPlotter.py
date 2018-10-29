@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 import argparse
 import datetime
+import scipy.special as scis
 
 now = datetime.datetime.now()
 
@@ -34,6 +35,11 @@ simInfo = np.loadtxt('SIMINFO')
 width,tmax,tubuleSims,arate,am,koff,kon = simInfo
 
 mt=np.arange(0,width)/width
+
+dx = 7.0
+x = mt*width*dx
+D0 = 2.7e5
+p0 = 1.0
 TotTimes = np.load('TotTimes.npy')
 SliceTimes = np.load('SliceTimes.npy')
 
@@ -87,7 +93,6 @@ minNTot = NTotArray[0]
 maxNTot = NTotArray[0]
 minATot = ATotArray[0]
 maxATot = ATotArray[0]
-
 for i in range(int(tubuleSims)):
         minNTot = np.minimum(minNTot,NTotArray[i])
         maxNTot = np.maximum(maxNTot,NTotArray[i])
@@ -100,6 +105,16 @@ for i, value in enumerate(SliceTimes):
 
         plt.figure(2)
         plt.plot(mt,acetylation2[i]/am,label=('t =%d s'%(value)))
+z = x/np.sqrt(4*D0*SliceTimes[0])
+pAnalytic = scis.erfc(z) * p0
+acetylationfit = 1 - np.exp(-p0*arate*SliceTimes[0]*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
+
+plt.figure(5)
+plt.plot(mt,acetylation2[0]/am,label='Stochastic at t = %ds'%(SliceTimes[0]))
+plt.plot(mt,acetylationfit,label='Analytic at t = %ds'%(SliceTimes[0]))
+plt.xlabel('x/L')
+plt.ylabel('Fraction of Acetylated Sites')
+plt.legend()
 
 plt.figure(1)
 plt.xlabel('x/L')
