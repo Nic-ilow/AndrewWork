@@ -38,7 +38,6 @@ arate=float(args.arate)
 am = int(args.am)
 tubuleSims = int(args.tubules)
 
-
 if kon==0:
         fractionfree = 1.0
 else:
@@ -141,7 +140,7 @@ while counter<tubuleSims:
 
         free = []
         bound = []
-
+        
         rightOut = 0
         leftIn = 0
 
@@ -153,19 +152,19 @@ while counter<tubuleSims:
         while tElapsed <= tmax:
                 
                 fill() # Replacing the boundary
-                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate*(am-Nacetyl/width) #Kinetic Monte Carlo
+                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate*am #Kinetic Monte Carlo
                 dt = -1.0/totrate*m.log(ran.random())
 
                 if len(plotCuts)>0:
                         while (tElapsed+dt-plotCuts[0])>0:
-                                pArray.append(np.copy(x))
-                                aArray.append(np.copy(asite))
+                                pArray.append(np.copy(x[1:]))
+                                aArray.append(np.copy(asite[1:]))
                                 plotPoints.append(plotCuts.pop(0))
                                 if len(plotCuts)==0:
                                         break
                         while (tElapsed+dt-netCuts[0])>0:
-                                NTot.append(sum(np.copy(x)))
-                                ATot.append(sum(np.copy(asite)))
+                                NTot.append(sum(np.copy(x[1:])))
+                                ATot.append(sum(np.copy(asite[1:])))
                                 totPoints.append(netCuts.pop(0))
                                 if len(netCuts)==0:
                                         break
@@ -178,7 +177,7 @@ while counter<tubuleSims:
                 elif nextx < Nfree*(kon+khop):
                         hop(ran.randrange(Nfree))
 
-                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate*(am-Nacetyl/width):
+                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate*am:
                         acetylate()
 
                 else:

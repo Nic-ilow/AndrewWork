@@ -78,7 +78,7 @@ os.chdir(absPath)
 
 z = x/np.sqrt(4*D0*SliceTimes)
 
-acetylationfit = 1 - np.exp(-p0*arate*SliceTimes*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
+acetylationfit = (1 - np.exp(-p0*arate*SliceTimes*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) ) )
 
 plt.scatter(SliceTimes,acetylation2/am,label='Stochastic')
 plt.plot(SliceTimes,acetylationfit,label='Analytic',c='r')

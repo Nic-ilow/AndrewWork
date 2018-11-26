@@ -166,7 +166,7 @@ while counter<tubuleSims:
 
                 fill() # Replacing the boundary
 
-                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate*(am*width-sum(asite)) #Kinetic Monte Carlo
+                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate*am #Kinetic Monte Carlo
                 dt = -1.0/totrate*m.log(ran.random())
 
                 if len(plotCuts)>0:
@@ -184,7 +184,7 @@ while counter<tubuleSims:
                 elif nextx < Nfree*(kon+khop):
                         hop(ran.randrange(Nfree))
 
-                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate*(am*width-sum(asite)):
+                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate*am:
                         acetylate()
 
                 else:

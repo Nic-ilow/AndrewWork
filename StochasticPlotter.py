@@ -34,6 +34,8 @@ simInfo = np.loadtxt('SIMINFO')
 
 width,tmax,tubuleSims,arate,am,koff,kon = simInfo
 
+width -= 1
+
 mt=np.arange(0,width)/width
 
 dx = 7.0
@@ -139,13 +141,21 @@ plt.xlabel('t (s)')
 plt.ylabel('Average Total Enzymes in Tubule')
 plt.legend()
 
+ATotFit = []
+for t in TotTimes:
+        z = x/np.sqrt(4*D0*t)
+        acetylationfit = (1 - np.exp(-p0*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) ))
+        ATotFit.append(sum(acetylationfit))
+
 plt.figure(4)
 ax = plt.gca()
-plt.plot(TotTimes,ATot)
+plt.plot(TotTimes,ATot,label='Stochastic')
+plt.plot(TotTimes,ATotFit,label='Analytic')
 plt.fill_between(TotTimes,minATot,maxATot,alpha=.3)
 ax.set_xscale('log')
 ax.set_yscale('log')
 plt.xlabel('t (s)')
 plt.ylabel('Average Total Acetylated Sites')
+plt.legend()
 
 plt.show()
