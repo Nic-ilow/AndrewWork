@@ -65,29 +65,33 @@ def hop(this):
                         x[pos] = 0
                         x[pos-1] = 1
                         free[this] = pos-1
+                        #tElapsed += dt 
         else:
                 if pos==width-1:
                         rightOut += 1
                         x[pos] = 0
                         free.pop(this)
                         Nfree-=1
+                        #tElapsed += dt
                 elif x[pos+1] == 0:
                         x[pos] = 0
                         x[pos+1] = 1
                         free[this] = pos+1
+                        #tElapsed += dt
         tElapsed += dt
 ##############################################
 
 def acetylate():
         global Nfree,tElapsed,asite,Nacetyl,Nbound,free,bound
-        temp = free
+        temp = []
+        temp = list(np.copy(free))
         temp.extend(bound)
         pos = ran.choice(temp)
-        temp2 = ran.random()
-        if temp2<=(1-asite[pos]/am):
+        
+        if ran.random()<=(1-asite[pos]/am):
                 asite[pos]+=1
                 Nacetyl += 1
-        tElapsed += dt
+        tElapsed += dt 
 
 ###############################################
 def binder(discriminator):
@@ -97,13 +101,11 @@ def binder(discriminator):
                 free.append(pos)
                 Nbound -= 1 
                 Nfree += 1
-        
         else:
                 pos = free.pop(ran.randrange(Nfree))
                 bound.append(pos)
                 Nfree -= 1
                 Nbound += 1
-
         tElapsed += dt
 
 ###############################################
@@ -124,10 +126,7 @@ while counter<tubuleSims:
         print('Tubule_{0}'.format(counter))
         ran.seed(int(time.time()*1000000))
         x = np.zeros(width,int)  # 0 if empty, 1 if particle
-        Density = np.zeros(np.size(x))
-
         asite = np.zeros(width,int) # 1 if acetylated, 0 if not
-        Acetylation = np.zeros(np.size(asite))
 
         totPoints = []
         plotPoints = []
@@ -148,14 +147,28 @@ while counter<tubuleSims:
 
         tElapsed = 0
 
-        plotCuts = [1, 2 , 4 , 8 , 16 , 30 ]
+        plotCuts = [.1 , .5 ,  1 , 2 , 4 , 8 , 16 , 30 ]
         netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
         counter2 = 0
         while tElapsed <= tmax:
+                
                 fill() # Replacing the boundary
+                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate*(am-Nacetyl/width) #Kinetic Monte Carlo
+                dt = -1.0/totrate*m.log(ran.random())
 
-                totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate #Kinetic Monte Carlo
-                dt = -1.0/totrate*m.log(1.0-ran.random())
+                if len(plotCuts)>0:
+                        while (tElapsed+dt-plotCuts[0])>0:
+                                pArray.append(np.copy(x))
+                                aArray.append(np.copy(asite))
+                                plotPoints.append(plotCuts.pop(0))
+                                if len(plotCuts)==0:
+                                        break
+                        while (tElapsed+dt-netCuts[0])>0:
+                                NTot.append(sum(np.copy(x)))
+                                ATot.append(sum(np.copy(asite)))
+                                totPoints.append(netCuts.pop(0))
+                                if len(netCuts)==0:
+                                        break
 
                 nextx = ran.random()*totrate
 
@@ -165,28 +178,15 @@ while counter<tubuleSims:
                 elif nextx < Nfree*(kon+khop):
                         hop(ran.randrange(Nfree))
 
-                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate:
+                elif nextx < Nfree*(kon+khop) + (Nbound+Nfree)*arate*(am-Nacetyl/width):
                         acetylate()
 
                 else:
                         binder('unbind')
 
-                Density += x*dt
-                #Acetylation += asite*dt
-
-                if any((tElapsed-t)>0 for t in plotCuts):
-                        temp1 = np.copy(x)
-                        temp2 = np.copy(asite)
-                        pArray.append(temp1)
-                        aArray.append(temp2)
-                        plotPoints.append(plotCuts.pop(0))
-
-                while any((tElapsed-t)>0 for t in netCuts):
-                       NTot.append(sum(np.copy(x)))
-                       ATot.append(sum(np.copy(asite)))
-                       totPoints.append(netCuts.pop(0))
-
+                
                 counter2 += 1
+        
         tEnd = time.time()
         tRun = (tEnd-tStart)/60
         print('Time Spent Running = %.2f'%tRun)

@@ -79,7 +79,7 @@ for directory in directories:
         elif 'FLUX' in directory:
                 flux += temp
 density2 = density / tubuleSims
-acetylation2 = acetylation / tubuleSims
+acetylation2 = acetylation / tubuleSims 
 NTot /= tubuleSims
 ATot /= tubuleSims
 flux /= tubuleSims
@@ -100,21 +100,24 @@ for i in range(int(tubuleSims)):
         maxATot = np.maximum(maxATot,ATotArray[i])
 
 for i, value in enumerate(SliceTimes):
+        if kon==0:
+                z = x/np.sqrt(4*D0*SliceTimes[i])
+                pAnalytic = scis.erfc(z) * p0
+                acetylationfit = (1 - np.exp(-p0*arate*SliceTimes[i]*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) ))
+                plt.figure(1)
+                plt.plot(mt,pAnalytic,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+                plt.figure(2)
+                plt.plot(mt,acetylationfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+        
         plt.figure(1)
-        plt.plot(mt,density2[i],label=('t = %d s'%(value)))
-
+        plt.plot(mt,density2[i],label=('t = %.2f s'%(value)))
         plt.figure(2)
-        plt.plot(mt,acetylation2[i]/am,label=('t =%d s'%(value)))
-z = x/np.sqrt(4*D0*SliceTimes[0])
-pAnalytic = scis.erfc(z) * p0
-acetylationfit = 1 - np.exp(-p0*arate*SliceTimes[0]*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
-
-plt.figure(5)
-plt.plot(mt,acetylation2[0]/am,label='Stochastic at t = %ds'%(SliceTimes[0]))
-plt.plot(mt,acetylationfit,label='Analytic at t = %ds'%(SliceTimes[0]))
-plt.xlabel('x/L')
-plt.ylabel('Fraction of Acetylated Sites')
-plt.legend()
+        plt.plot(mt,acetylation2[i]/am,label=('t =%.2f s'%(value)))
+if kon==0:
+        ax = plt.gca()
+        plt.figure(3) 
+        NtotAnalytic = p0*np.sqrt(4*D0/(dx*dx)*TotTimes/np.pi)
+        plt.plot(TotTimes,NtotAnalytic,c='r',ls='dashed',lw=4,label='Analytic')
 
 plt.figure(1)
 plt.xlabel('x/L')
@@ -128,12 +131,13 @@ plt.legend()
 
 plt.figure(3)
 ax = plt.gca()
-plt.plot(TotTimes,NTot)
+plt.plot(TotTimes,NTot,label='Stochastic')
 plt.fill_between(TotTimes,minNTot,maxNTot,alpha=.3)
 ax.set_xscale('log')
 ax.set_yscale('log')
 plt.xlabel('t (s)')
 plt.ylabel('Average Total Enzymes in Tubule')
+plt.legend()
 
 plt.figure(4)
 ax = plt.gca()
