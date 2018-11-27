@@ -157,8 +157,8 @@ while counter<tubuleSims:
 
                 if len(plotCuts)>0:
                         while (tElapsed+dt-plotCuts[0])>0:
-                                pArray.append(np.copy(x[1:]))
-                                aArray.append(np.copy(asite[1:]))
+                                pArray.append(np.copy(x))
+                                aArray.append(np.copy(asite))
                                 plotPoints.append(plotCuts.pop(0))
                                 if len(plotCuts)==0:
                                         break

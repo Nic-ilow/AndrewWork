@@ -5,6 +5,7 @@ import pickle
 import argparse
 import datetime
 import scipy.special as scis
+import scipy.optimize as scio
 
 now = datetime.datetime.now()
 
@@ -34,7 +35,6 @@ simInfo = np.loadtxt('SIMINFO')
 
 width,tmax,tubuleSims,arate,am,koff,kon = simInfo
 
-width -= 1
 
 mt=np.arange(0,width)/width
 
@@ -100,14 +100,25 @@ for i in range(int(tubuleSims)):
         maxNTot = np.maximum(maxNTot,NTotArray[i])
         minATot = np.minimum(minATot,ATotArray[i])
         maxATot = np.maximum(maxATot,ATotArray[i])
+fudge = am/(dx+1.0)
+
+def aAnalytic(t,Beta):
+        global p0,arate,D0,x
+        z = x/np.sqrt(4*D0*t)
+        afit = 1 - np.exp(-p0*Beta*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
+        return afit
+
+def pAnalytic(t):
+        z = x/np.sqrt(4*D0*t)
+        pfit = scis.erfc(z) * p0
+        return pfit
 
 for i, value in enumerate(SliceTimes):
         if kon==0:
-                z = x/np.sqrt(4*D0*SliceTimes[i])
-                pAnalytic = scis.erfc(z) * p0
-                acetylationfit = (1 - np.exp(-p0*arate*SliceTimes[i]*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) ))
+                acetylationfit = aAnalytic(value,1)
+                pfit = pAnalytic(value)
                 plt.figure(1)
-                plt.plot(mt,pAnalytic,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+                plt.plot(mt,pfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
                 plt.figure(2)
                 plt.plot(mt,acetylationfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
         
@@ -143,9 +154,7 @@ plt.legend()
 
 ATotFit = []
 for t in TotTimes:
-        z = x/np.sqrt(4*D0*t)
-        acetylationfit = (1 - np.exp(-p0*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) ))
-        ATotFit.append(sum(acetylationfit))
+        ATotFit.append(sum(aAnalytic(t,1)))
 
 plt.figure(4)
 ax = plt.gca()
