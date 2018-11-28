@@ -42,17 +42,13 @@ if kon==0:
         fractionfree = 1.0
 else:
         R = koff/kon
-        fractionfree=R/(1.0+R)  # large R gives fractionfree=1 e.g. how often the particle is NOT bound
+        fractionfree=R/(1.0+R)  #how often the particle is NOT bound
 khop=2.0*D0/(dx*dx)/fractionfree 
 
 # density 1 at 0
 # density 0 at width (which isn't a site)
 
-#
-mt = np.arange(0,width)
-mt2 = mt*dx
-mtScaled = mt/(width-1.0)
-global x,leftIn,rightOut,Nbound,Nfree,free,bound,x,asite,tElapsed
+global x,leftIn,rightOut,Nbound,Nfree,free,bound,x,asite,tElapsed #I don't fully understand how globals work
 
 ###################################################
 def hop(this):
@@ -122,8 +118,9 @@ tStart = time.time()
 counter = 0
 
 while counter<tubuleSims:
+
         print('Tubule_{0}'.format(counter))
-        ran.seed(int(time.time()*1000000))
+        ran.seed(int(time.time()*1000000)) # New random seed for each tube
         x = np.zeros(width,int)  # 0 if empty, 1 if particle
         asite = np.zeros(width,int) # 1 if acetylated, 0 if not
 
@@ -145,7 +142,7 @@ while counter<tubuleSims:
         leftIn = 0
 
         tElapsed = 0
-
+        #When to Save arrays (Plot for spatial , net for temporal/Total)
         plotCuts = [.1 , .5 ,  1 , 2 , 4 , 8 , 16 , 30 ]
         netCuts = list(np.logspace(-200,0,num=200,base=1.1)*tmax)
         counter2 = 0
@@ -154,7 +151,8 @@ while counter<tubuleSims:
                 fill() # Replacing the boundary
                 totrate = Nfree*(kon+khop) + Nbound*koff +(Nbound+Nfree)*arate*am #Kinetic Monte Carlo
                 dt = -1.0/totrate*m.log(ran.random())
-
+                
+                # We know dt will move forward, so every timestep surpassed needs to have the data from the current time, e.g before the event occurs
                 if len(plotCuts)>0:
                         while (tElapsed+dt-plotCuts[0])>0:
                                 pArray.append(np.copy(x))
@@ -211,6 +209,7 @@ np.savetxt(os.path.join(dateFormat,'SIMINFO'),simInfo,delimiter=',')
 np.save(os.path.join(dateFormat,'TotTimes'),totPoints)
 np.save(os.path.join(dateFormat,'SliceTimes'),plotPoints)
 
-shutil.move(dateFormat,'Data')
+if os.path.exists('Data'):
+        shutil.move(dateFormat,'Data')
 
 

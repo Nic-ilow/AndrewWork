@@ -103,9 +103,9 @@ for i in range(int(tubuleSims)):
 fudge = am/(dx+1.0)
 
 def aAnalytic(x,Beta):
-        global p0,arate,D0,value
-        z = x/np.sqrt(4*D0*value)
-        afit = 1 - np.exp(-p0*Beta*arate*value*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
+        global p0,arate,D0,t
+        z = x/np.sqrt(4*D0*t)
+        afit = 1 - np.exp(-p0*Beta*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
         return afit
 
 def pAnalytic(t):
@@ -113,21 +113,26 @@ def pAnalytic(t):
         pfit = scis.erfc(z) * p0
         return pfit
 fitParam = []
-for i, value in enumerate(SliceTimes):
+ATotFit = []
+for t in TotTimes:
+        ATotFit.append(sum(aAnalytic(x,1)))
+
+
+for i, t in enumerate(SliceTimes):
         if kon==0:
                 temp = scio.curve_fit(aAnalytic,x,acetylation2[i]/am)
-                fitParam.append(temp[0])
+                fitParam.append(temp[0][0])
                 acetylationfit = aAnalytic(x,1)
-                pfit = pAnalytic(value)
+                pfit = pAnalytic(t)
                 plt.figure(1)
-                plt.plot(mt,pfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+                plt.plot(mt,pfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(t)))
                 plt.figure(2)
-                plt.plot(mt,acetylationfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+                plt.plot(mt,acetylationfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(t)))
                 plt.plot(mt,aAnalytic(x,temp[0]),lw=3,label=('Optimized Fudge Factor =%.3f'%(temp[0])))
         plt.figure(1)
-        plt.plot(mt,density2[i],label=('t = %.2f s'%(value)))
+        plt.plot(mt,density2[i],label=('t = %.2f s'%(t)))
         plt.figure(2)
-        plt.plot(mt,acetylation2[i]/am,label=('t =%.2f s'%(value)))
+        plt.plot(mt,acetylation2[i]/am,label=('t =%.2f s'%(t)))
 if kon==0:
         ax = plt.gca()
         plt.figure(3) 
@@ -154,10 +159,6 @@ plt.xlabel('t (s)')
 plt.ylabel('Average Total Enzymes in Tubule')
 plt.legend()
 
-ATotFit = []
-for value in TotTimes:
-        ATotFit.append(sum(aAnalytic(x,1)))
-
 plt.figure(4)
 ax = plt.gca()
 plt.plot(TotTimes,ATot,label='Stochastic')
@@ -169,4 +170,9 @@ plt.xlabel('t (s)')
 plt.ylabel('Average Total Acetylated Sites')
 plt.legend()
 
+plt.figure(5)
+plt.scatter(SliceTimes,fitParam)
+plt.xlabel('t (s)')
+plt.ylabel('Fudge Factor')
+plt.title('Multiplicity = %d'%(am))
 plt.show()
