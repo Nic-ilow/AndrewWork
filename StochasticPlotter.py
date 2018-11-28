@@ -114,23 +114,23 @@ def pAnalytic(t):
         return pfit
 
 for i, value in enumerate(SliceTimes):
-        if kon==0:
-                acetylationfit = aAnalytic(value,1)
-                pfit = pAnalytic(value)
-                plt.figure(1)
-                plt.plot(mt,pfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
-                plt.figure(2)
-                plt.plot(mt,acetylationfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+        
+        acetylationfit = aAnalytic(value,1)
+        pfit = pAnalytic(value)
+        plt.figure(1)
+        plt.plot(mt,pfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
+        plt.figure(2)
+        plt.plot(mt,acetylationfit,ls='dashed',lw=4,label=('Analytic t=%.2f s'%(value)))
         
         plt.figure(1)
         plt.plot(mt,density2[i],label=('t = %.2f s'%(value)))
         plt.figure(2)
         plt.plot(mt,acetylation2[i]/am,label=('t =%.2f s'%(value)))
-if kon==0:
-        ax = plt.gca()
-        plt.figure(3) 
-        NtotAnalytic = p0*np.sqrt(4*D0/(dx*dx)*TotTimes/np.pi)
-        plt.plot(TotTimes,NtotAnalytic,c='r',ls='dashed',lw=4,label='Analytic')
+
+ax = plt.gca()
+plt.figure(3) 
+NtotAnalytic = p0*np.sqrt(4*D0/(dx*dx)*TotTimes/np.pi)
+plt.plot(TotTimes,NtotAnalytic,c='r',ls='dashed',lw=4,label='Analytic')
 
 plt.figure(1)
 plt.xlabel('x/L')
