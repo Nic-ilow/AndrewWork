@@ -81,25 +81,47 @@ while telapsed<=tmax: # Iterating the system of tmax amount of seconds
 print((time.time()-tstart)/60)
 
 counter = 0
+def aAnalytic(x,Beta,t):
+        global p0,arate,D0
+        z = x/np.sqrt(4*D0*t)
+        afit = 1 - np.exp(-p0*Beta*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
+        return afit
 
+def pAnalytic(x,t):
+        z = x/np.sqrt(4*D0*t)
+        pfit = scis.erfc(z) * p0
+        return pfit
+
+pfit = pAnalytic(x,tmax)
+afit = aAnalytic(x,1,tmax)
 plt.figure(1)
-plt.plot(x/xmax,p[0:width])
+plt.scatter(x/xmax,p[0:width],s=2,label=('Finite Difference Model at t=%.2f s')%(tmax))
+plt.plot(x/xmax,pfit,c='r',ls='dashed',lw=4,label='Simple Diffusion Fit')
 plt.xlabel('x/L')
 plt.ylabel('Density')
+plt.legend()
 
 plt.figure(2)
-plt.plot(x/xmax,acetyl/am)
+plt.scatter(x/xmax,acetyl/am,s=2,label=('Finite Difference Model at t=%.2f s'%(tmax)))
+plt.plot(x/xmax,afit,c='r',ls='dashed',lw=4,label='Simple Diffusion Fit')
 plt.xlabel('x/L')
 plt.ylabel('Acetylation')
-
+plt.legend()
+NtotAnalytic = p0*np.sqrt(4*D0/(dx*dx)*tArray/np.pi)
 plt.figure(3)
-plt.loglog(tArray[:199] , pTot[:199])
+plt.loglog(tArray[:199] , pTot[:199],label=('Finite Difference Model at t=%.2f s'%(tmax)))
+plt.loglog(tArray[:199],NtotAnalytic[:199],label='Simple Diffusion Fit')
 plt.xlabel('t (s)')
 plt.ylabel('Total Enzymes in Tubule')
-
+plt.legend()
+ATotFit = []
+for t in tArray:
+        ATotFit.append(sum(aAnalytic(x,1,t)))
 plt.figure(4)
-plt.loglog(tArray[:199] , aTot[:199])
+plt.loglog(tArray[:199] , aTot[:199],label=('Finite Difference Model at t=%.2f s'%(tmax)))
+plt.loglog(tArray[:199],ATotFit[:199],label='Simple Diffusion Fit')
 plt.xlabel('t (s)')
 plt.ylabel('Total Acetylated Sites ')
+plt.legend()
 
 plt.show()
