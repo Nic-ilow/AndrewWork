@@ -33,7 +33,7 @@ width = np.size(xbar)
 ### pTot and aTot plotting array
 dtbar = min(0.5/p0hat , 0.10*dxbar**2)
 tArray = np.logspace(-200,0,num=200,base=1.1)*tbarmax
-p2 = np.logspace(2,2,1,base=10)
+p2 = np.logspace(-2,2,5,base=3)
 #p2 = np.array([.0625,64])
 pArray = np.zeros((np.size(p2) , width))        
 aArray = np.zeros_like(pArray)
@@ -89,7 +89,7 @@ for p0hat in p2:
 
                 pscaler = 1+p+p**2     
                 p_1[1:width] = p[1:width] +   dtbar *  ( ( (p[0:width-1] - p[1:width]) / ((pscaler[0:width-1]+pscaler[1:width])/2) + (p[2:width+1] - p[1:width]) / ((pscaler[2:width+1]+pscaler[1:width])/2 )) / (dxbar**2))  
-                acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width] ### NO SFD
+                acetyl[0:width] = acetyl[0:width] + (1 - acetyl[0:width] ) * dtbar * p[0:width]/p0hat ### NO SFD
                  
                 telapsed += dtbar                     
 
@@ -152,11 +152,11 @@ for i , value in enumerate(p2):
         counter+=1
 
 plt.figure(1)
-plt.plot(xbar,pReg[0:width],label=('No Single File Effects'))
+plt.plot(xbar,pReg[0:width],ls='dashed',label=('Simple Diffusion Fit'))
 plt.legend()
 
 plt.figure(2)
-plt.plot(xbar,aReg,label=('No Single File Effects'))
+plt.plot(xbar,aReg,ls='dashed',label=('Simple Diffusion Fit'))
 plt.legend()
 plt.figure(3)
 #plt.scatter(tArray , pTotReg,s=2,label=('No Single File Effects'))

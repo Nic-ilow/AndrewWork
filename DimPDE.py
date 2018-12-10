@@ -11,10 +11,12 @@ import time
 
 parser = argparse.ArgumentParser(description='Command line inputs:')
 parser.add_argument('-p0','--p0',default=1)
-parser.add_argument('-pscale','--pscale',default=.01)
+#parser.add_argument('-pscale','--pscale',default=.01)
+parser.add_argument('-kon','--kon',default=1000)
+parser.add_argument('-koff','--koff',default=10)
 parser.add_argument('-dx','--dx',default=7.0)
 parser.add_argument('-D0','--D0',default = 2.7e5)
-parser.add_argument('-xmax','--xmax',default=4.0e3)
+parser.add_argument('-xmax','--xmax',default=3584.0)
 parser.add_argument('-dt','--dt',default=1.0e-5)
 parser.add_argument('-tmax','--tmax',default=32.0)
 parser.add_argument('-arate','--arate',default=1.0)
@@ -29,9 +31,15 @@ tmax = float(args.tmax)
 D0 = float(args.D0)
 arate = float(args.arate)
 am = float(args.am)
-pscale = float(args.pscale)
+#pscale = float(args.pscale)
+kon = float(args.kon)
+koff = float(args.koff)
 
-
+Kd = koff/kon
+fractionfree = Kd/(1+Kd)
+khop = 2.0*D0/(dx*dx)/fractionfree
+pscale = np.sqrt((kon+koff)/khop)*(1+Kd)
+print('The effective pscale is:',pscale)
 colorList = ['b','g','r','c','m','k','y']
 
 
