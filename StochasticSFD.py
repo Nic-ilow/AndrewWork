@@ -209,7 +209,7 @@ np.savetxt(os.path.join(dateFormat,'SIMINFO'),simInfo,delimiter=',')
 np.save(os.path.join(dateFormat,'TotTimes'),totPoints)
 np.save(os.path.join(dateFormat,'SliceTimes'),plotPoints)
 
-if os.path.exists('Data'):
-        shutil.move(dateFormat,'Data')
+if os.path.exists('StochasticData'):
+        shutil.move(dateFormat,'StochasticData')
 
 
