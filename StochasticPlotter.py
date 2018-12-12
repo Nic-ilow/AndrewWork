@@ -26,7 +26,7 @@ minute = int(args.min)
 dataPath = 'Sim_{0}_{1}_{2}_{3}_{4}'.format(day,month,year,hour,minute)
 
 absPath = os.getcwd()
-os.chdir('Data')
+os.chdir('StochasticData')
 os.chdir(dataPath)
 
 directories = os.listdir(os.getcwd())
