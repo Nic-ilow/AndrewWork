@@ -78,9 +78,7 @@ def hop(this):
 
 def acetylate():
         global Nfree,tElapsed,asite,Nacetyl,Nbound,free,bound
-        temp = []
-        temp = list(np.copy(free))
-        temp.extend(bound)
+        temp = free+bound
         pos = ran.choice(temp)
         
         if ran.random()<=(1-asite[pos]/am):

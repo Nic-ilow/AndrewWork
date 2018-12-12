@@ -102,10 +102,10 @@ for i in range(int(tubuleSims)):
         maxATot = np.maximum(maxATot,ATotArray[i])
 fudge = am/(dx+1.0)
 
-def aAnalytic(t,Beta):
+def aAnalytic(t):
         global p0,arate,D0,x
         z = x/np.sqrt(4*D0*t)
-        afit = 1 - np.exp(-p0*Beta*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
+        afit = 1 - np.exp(-p0*arate*t*( ((1+2*z*z)*scis.erfc(z)) - ((2*z*np.exp(-(z*z)))/np.sqrt(np.pi)) ) )
         return afit
 
 def pAnalytic(t):
@@ -115,7 +115,7 @@ def pAnalytic(t):
 
 for i, value in enumerate(SliceTimes):
         
-        acetylationfit = aAnalytic(value,1)
+        acetylationfit = aAnalytic(value)
         pfit = pAnalytic(value)
         plt.figure(1)
         plt.plot(mt,pfit,ls='dashed',lw=4,label=('Simple Diffusion Fit t=%.2f s'%(value)))
@@ -154,7 +154,7 @@ plt.legend()
 
 ATotFit = []
 for t in TotTimes:
-        ATotFit.append(sum(aAnalytic(t,1)))
+        ATotFit.append(sum(aAnalytic(t)))
 
 plt.figure(4)
 ax = plt.gca()
